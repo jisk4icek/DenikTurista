@@ -9,16 +9,17 @@ Vítej v kompletní dokumentaci pluginu **BasicLand Turistika**!
 | Strana | Popis |
 |---|---|
 | [🏠 Domů](Home) | Tato strana |
+| [⚙️ Jak to Funguje](Jak-to-Funguje) | Kompletní přehled logiky – flow diagramy všech systémů |
 | [⚡ Instalace](Instalace) | Jak plugin nainstalovat a spustit |
 | [⚙️ Konfigurace](Konfigurace) | Podrobný průvodce soubory `config.yml` a `messages.yml` |
-| [🎒 Turistické Známky](Turisticke-Znamky) | Jak vytvořit a spravovat turistické známky |
+| [📍 Lokace Zna mek](Lokace-Znamek) | Nastavení fyzických míst ve světě kde hráč získá zna mku |
 | [📋 Příkazy & Oprávnění](Prikazy-a-Opravneni) | Přehled všech příkazů a permission nodů |
 | [🪂 Systém Airdropů](System-Airdropu) | Konfigurace limitovaných edicí a airdropů |
 | [🏆 Milníky & Odměny](Milniky-a-Odmeny) | Nastavení milníků a server-first odměn |
 | [🪧 Hologramy](Hologramy) | TextDisplay hologramy pro žebříček |
-| [🛡️ Anti-ClearLag & Anti-Cheat](Anti-ClearLag-a-Anti-Cheat) | Zabezpečení airdropů a doporučení |
+| [🛡️ Anti-XRay & Anti-Cheat](Anti-ClearLag-a-Anti-Cheat) | Anti-xray konfigurace, WorldGuard, bezpečnostní doporučení |
 | [🔨 Sestavení ze Zdrojáku](Build-ze-Zdrojaku) | Pro vývojáře – jak zkompilovat plugin |
-| [🗺️ Roadmap](Roadmap) | Plánované funkce v budoucích fázích |
+| [🗺️ Roadmap](Roadmap) | Dokončené a plánované fáze vývoje |
 | [❓ FAQ](FAQ) | Nejčastěji kladené dotazy |
 
 ---

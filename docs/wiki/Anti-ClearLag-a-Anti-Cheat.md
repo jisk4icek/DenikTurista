@@ -1,54 +1,34 @@
-# 🛡️ Anti-ClearLag & Anti-Cheat
+# 🛡️ Anti-XRay, Anti-Cheat & Zabezpečení
 
-Tato strana popisuje bezpečnostní opatření pluginu a doporučení pro zabezpečení eventu.
-
----
-
-## 1. Ochrana airdropů před ClearLagem
-
-### Jak to funguje
-
-Každý airdrop item je při spawnu označen pomocí **PersistentDataContainer (PDC)**:
-
-```java
-PersistentDataContainer pdc = meta.getPersistentDataContainer();
-pdc.set(new NamespacedKey("turistika", "airdrop_id"), PersistentDataType.STRING, stampId);
-pdc.set(new NamespacedKey("turistika", "airdrop_slots"), PersistentDataType.INTEGER, maxPickups);
-```
-
-Tento tag přežívá:
-- ✅ Restart serveru
-- ✅ Chunk unload/reload
-- ✅ Serializaci do NBT (item zůstane označen i v databázi)
-
-### ClearLag Whitelist
-
-Pro většinu ClearLag pluginů je potřeba nastavit whitelist. Pokud váš ClearLag používá whitelist přes custom metadata/NBT, přidejte klíč `turistika:airdrop_id`.
-
-**Doporučené pluginy místo ClearLag:**
-- [Chunky](https://modrinth.com/plugin/chunky) – pre-generace chunkú, snižuje lag
-- Paper's vlastní entity cap – nastavení v `paper-world-defaults.yml`
+Kompletní průvodce zabezpečením turistického eventu na Production serveru.
 
 ---
 
-## 2. Anti-Xray – Doporučení pro budoucí fáze
+## 1. Paper Anti-Xray (Vestavěný)
 
-> [!NOTE]
-> Přímá Anti-Xray implementace je plánována v **Fázi 5**.
+Paper má od verze 1.19+ výkonný vestavěný Anti-Xray, který stačí správně nakonfigurovat.
 
-Než bude Fáze 5 hotová, doporučujeme použít Paper's vestavěný Anti-Xray:
+### Kde nastavit
+Soubor: `config/paper-world-defaults.yml`
 
-### Nastavení `paper-world-defaults.yml`
+### Doporučená konfigurace
 
 ```yaml
 anticheat:
   anti-xray:
     enabled: true
-    engine-mode: 2    # Режим 2 je nejsilnější (fake bloky)
+
+    # Režim 2 je nejsilnější – vyplní chunk falešnými bloky
+    # Hráč s X-Ray viděl chaos místo skutečných bloků
+    engine-mode: 2
+
+    # Do jaké hloubky se aplikuje (výška 64 = level moře)
     max-block-height: 64
+
+    # Radius kolem hráče, kde se falešné bloky odstraní (2 = výchozí)
     update-radius: 2
-    lava-obscures: false
-    use-permission: false
+
+    # Skryté bloky = bloky, které se nahradí falešnými v engine-mode 2
     hidden-blocks:
       - copper_ore
       - deepslate_copper_ore
@@ -60,64 +40,200 @@ anticheat:
       - deepslate_coal_ore
       - lapis_ore
       - deepslate_lapis_ore
-      - mossy_cobblestone   # ← sem přidat bloky, za nimiž schováváme clue ke známkám!
-      - stone
-      - deepslate
+      - diamond_ore
+      - deepslate_diamond_ore
+      - emerald_ore
+      - deepslate_emerald_ore
+      - redstone_ore
+      - deepslate_redstone_ore
+      - ancient_debris
+      # ↓ PŘIDEJ BLOKY, KTERÉ POUŽÍVÁŠ JAKO "HINT" KE ZNAMKÁM
+      # Například skrytá truhla nebo dekorace poblíž lokace zna mky
+      - mossy_cobblestone
+      - chiseled_stone_bricks
+      - cracked_stone_bricks
+
+    # Náhradní bloky (čím se hidden-blocks nahradí)
     replacement-blocks:
       - stone
-      - oak_planks
       - deepslate
+      - oak_planks
 ```
 
-### Skrývání "hint bloků" ke známkám
-
-Pokud plánuješ v budoucnu umísťovat fyzické bloky jako nápovědy ke skrytým známkám, přidej jejich typy do `hidden-blocks`. Hráči s X-Ray texturama je neuvidí.
+> [!IMPORTANT]
+> Engine-mode 2 způsobuje vyšší server load při generování chunkú. Pokud máš slabý server, použij engine-mode 1 (méně efektivní, ale méně náročný).
 
 ---
 
-## 3. Anti-Cheat – Ochrana Zvedání Airdropů
+## 2. Ochrana Lokací Zna mek – WorldGuard
 
-Plugin implementuje vlastní ochranu v `EntityPickupItemEvent`:
+Instaluj **WorldGuard** pro ochranu oblastí, kde jsou turistické lokace.
 
-```java
-// Vždy zrušíme vanilla pickup
-event.setCancelled(true);
+### Ochrana oblasti kolem zna mky
 
-// Pak provedeme vlastní logiku (DB check, slot kontrola, etc.)
+```bash
+# 1. Označ oblast (WorldEdit wand)
+//wand
+# Označ rohy oblasti (kde je zna mka)
+
+# 2. Vytvoř region
+/region define znamka_karlstejn
+
+# 3. Nastav pravidla
+/region flag znamka_karlstejn pvp deny
+/region flag znamka_karlstejn block-break deny
+/region flag znamka_karlstejn block-place deny
+/region flag znamka_karlstejn chest-access deny
+
+# Volitelně – zakáže průlet elytr do oblasti (hráč musí přijít pěšky)
+/region flag znamka_karlstejn elytra deny
 ```
 
-Díky tomu:
-- ❌ Hráč nemůže sebrat airdrop přímo do inventáře (obchází item entity)
-- ✅ My zcela kontrolujeme, co se při pickup stane
-- ✅ Databáze se zapisuje atomicky v jednovláknovém executoru
+### Pro VIP oblasti (pouze s určitým rankem)
+
+```bash
+/region flag znamka_special entry deny
+/region addmember znamka_special g:vip
+```
 
 ---
 
-## 4. Ochrana GUI před Manipulací
+## 3. Ochrana Airdropů před ClearLagem
 
-Plugin zachytává **InventoryClickEvent** i **InventoryDragEvent** pro všechna naše GUI:
+### Jak to plugin řeší interně
 
+Každý airdrop item obsahuje PDC tag:
+```
+Namespace: turistika
+Key: airdrop_id
+Type: STRING
+Value: <id_zna mky>
+```
+
+### Konfigurace pro různé Anti-Lag pluginy
+
+#### ClearLag (starší verze)
+ClearLag bohužel **nepodporuje** PDC whitelist nativně. Řešení:
+
+```yaml
+# clearlag/config.yml
+entity-clear:
+  enabled: true
+  worlds:
+    '*':
+      enabled: true
+      # Toto nefunguje u ClearLag pro PDC - viz alternativy níže
+```
+
+**Doporučujeme místo ClearLagu použít:**
+
+#### Paper Vlastní Entity Limity
+```yaml
+# paper-world-defaults.yml
+entities:
+  spawning:
+    monster-spawn-max-light-level: -1
+  max-auto-save-chunks-per-tick: 8
+
+# Snižte počet entit jinak – přes spawn limitery, ne ClearLag
+```
+
+#### EntityCleaner / RedstoneTools (mají PDC whitelist)
+Tyto moderní alternativy umí filtrovat entity podle PDC tagů:
+```yaml
+# entitycleaner config (příklad)
+item-cleanup:
+  enabled: true
+  interval: 300
+  whitelist-pdc:
+    - "turistika:airdrop_id"  # Naše airdropy NEMAZAT
+```
+
+---
+
+## 4. Anti-Cheat pro Sbírání Zna mek
+
+### Ochrana Proximity Systému
+
+Hráč by mohl použít **Fly/Speed Hack** pro rychlé projet všechny lokace.
+
+**Doporučené Anti-Cheat pluginy:**
+| Plugin | Platba | Detekce |
+|---|---|---|
+| **Grim AntiCheat** | Free (GitHub) | Pohyb, fly, speed, nofall |
+| **Matrix AntiCheat** | Premium | Komplexní detekce |
+| **Spartan** | Premium | Pohyb + combat |
+
+Jakýkoliv Anti-Cheat, který blokuje ilegální pohyb, **automaticky** chrání i proximity systém.
+
+### Rate Limiting v Pluginu
+
+LocationManager má vestavěný throttling:
+- Kontrola každé **2 sekundy** (ne na každý tick)
+- Hint cooldown **30 sekund** per hráč per zna mka
+- Zna mka se přidá **jednou** (INSERT OR IGNORE v SQLite)
+
+Hráč tedy nemůže získat stejnou zna mku vícekrát ani rychlým pohybem.
+
+---
+
+## 5. Ochrana GUI před Exploity
+
+Plugin řeší dva klasické inventory exploity:
+
+### Item Duplication přes Drag
 ```java
 @EventHandler
 public void onInventoryDrag(InventoryDragEvent event) {
     if (event.getInventory().getHolder() instanceof Gui) {
-        event.setCancelled(true);  // Blokuje drag do GUI
+        event.setCancelled(true); // Blokuje drag
     }
 }
 ```
 
-Tím je znemožněno:
-- Vložení vlastního itemu do deníkového GUI tažením
-- Krádež předmětů z GUI výměnným trikem (shift-click exploity)
+### Click-through Exploit (Shift+Click)
+```java
+@EventHandler
+public void onInventoryClick(InventoryClickEvent event) {
+    if (event.getInventory().getHolder() instanceof Gui) {
+        event.setCancelled(true); // Blokuje všechna kliknutí
+        // ... pak zpracujeme kliknutí sami
+    }
+}
+```
 
 ---
 
-## 5. Thread-Safety SQLite
+## 6. Ochrana před Duplicitními Účty (Alt Abuse)
 
-> [!IMPORTANT]
-> SQLite nepodporuje paralelní zápisy. Bez ochrany by mohlo dojít ke korupci databáze.
+> [!NOTE]
+> Toto je plánováno v **Fázi 5**.
 
-Plugin řeší toto pomocí dedikovaného jednovláknového executoru:
+Do té doby doporučujeme:
+
+### Geyser + Floodgate Anti-Alt
+```yaml
+# Bedrock hráči jsou automaticky detekováni a odděleni
+```
+
+### LibertyBans / LiteBans IP Ban
+```bash
+# Zabanuj IP adresu duplicitního hráče
+/ipban <player> Duplicitní účet
+```
+
+### Monitoring pomocí CoreProtect
+```bash
+# Sleduj aktivitu podezřelých hráčů
+/co inspect
+/co lookup u:<player> a:all t:1h
+```
+
+---
+
+## 7. SQLite Thread-Safety
+
+Plugin používá dedikovaný thread pro databázi:
 
 ```java
 private final ExecutorService dbExecutor = Executors.newSingleThreadExecutor(r -> {
@@ -127,25 +243,28 @@ private final ExecutorService dbExecutor = Executors.newSingleThreadExecutor(r -
 });
 ```
 
-Každé `CompletableFuture` databázové operace explicitně specifikuje `dbExecutor`:
-```java
-CompletableFuture.supplyAsync(() -> { /* SQL operace */ }, dbExecutor);
-```
-
-Navíc je zapnut **WAL (Write-Ahead Logging)** režim SQLite pro lepší výkon při souběžném čtení:
-```java
-statement.execute("PRAGMA journal_mode=WAL;");
-```
+**Proč je to důležité:**
+- SQLite neumí paralelní zápisy → bez ochrany → korupce dat
+- `newSingleThreadExecutor()` zajišťuje, že v jednu chvíli píše vždy max 1 vlákno
+- `WAL mode` navíc umožňuje souběžné čtení při zápisu
 
 ---
 
-## 6. Doporučené Security Pluginy
+## 8. Doporučený Security Stack
 
-Pro produkční server doporučujeme přidat:
+Pro produkční BasicLand server s turistickým eventem doporučujeme:
 
-| Plugin | Účel |
-|---|---|
-| **Matrix / Grim AntiCheat** | Detekce speed hack, fly hack |
-| **CoreProtect** | Log všech bloků – dohledatelnost griefingu |
-| **LibertyBans / LiteBans** | Správa banů |
-| **ViaVersion** | Podpora starších klientů bez ztráty Paper funkcí |
+```
+✅ Paper 1.20+ (vestavěný Anti-Xray, PDC, TextDisplay)
+✅ WorldGuard (ochrana lokací)
+✅ Grim AntiCheat (pohybový anti-cheat - free)
+✅ LibertyBans (správa banů + IP bany)
+✅ CoreProtect (logging bloků + hráčů)
+✅ ViaVersion (více klientských verzí)
+✅ Spark (profiler - sleduj lag spikes)
+```
+
+```
+❌ ClearLag (nezná PDC) → nahradit entity limity v Paper
+❌ Starý PluginManager reload → použij /turista reload místo /reload
+```

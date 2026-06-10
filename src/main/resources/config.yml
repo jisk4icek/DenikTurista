@@ -7,23 +7,44 @@
 
 # ─────────────────────────────────────────────
 #  NASTAVENÍ TURISTICKÝCH ZNÁMEK
-#  Každá známka má unikátní ID (klíč).
+#
+#  Každá známka má unikátní ID (klíč pod stamps:).
 #  ID se používá v příkazu: /turista give <hráč> <ID>
+#
+#  Jak nastavit fyzickou lokaci známky ve světě:
+#    1. Jdi na místo, kde chceš mít known ku
+#    2. Zadej: /turista setlocation <id_znamky> [radius]
+#    3. Plugin automaticky zapíše souřadnice do config.yml
+#    4. Hráč dostane zna mku, jakmile vstoupí do daného okruhu
+#
+#  Alternativně piš lokaci ručně pod klíč "location":
+#    location:
+#      world: "world"
+#      x: 100.0
+#      y: 64.0
+#      z: 200.0
+#      radius: 5.0   <- poloměr v metrech
 # ─────────────────────────────────────────────
 stamps:
   hrad_karlstejn:
     name: "&6✦ Turistická Známka: Hrad Karlštejn ✦"
     lore:
-      - "&7Tato slavnostní známka potvrzuje"
+      - "&7Tato slavnostní zna mka potvrzuje"
       - "&7tvou návštěvu malebného hradu Karlštejn."
       - ""
-      - "&8Odesílatel: &7BasicLand Admin Team"
       - "&8Sbírka: &e2026 Letní Tour"
     material: PAPER
     custom_model_data: 1001
+    # Fyzická lokace ve světě (nastav přes /turista setlocation nebo ručně)
+    location:
+      world: "world"
+      x: 0.5
+      y: 65.0
+      z: 0.5
+      radius: 8.0
 
   letni_festival_2026:
-    name: "&b✦ Turistická Známka: Letní Festival 2026 ✦"
+    name: "&b✦ Turistická Zna mka: Letní Festival 2026 ✦"
     lore:
       - "&7Exkluzivní vzpomínka na famózní"
       - "&7Letní Festival 2026 na BasicLandu!"
@@ -33,25 +54,34 @@ stamps:
     custom_model_data: 1002
     # Datum a čas odemčení. Formát: yyyy-MM-dd HH:mm:ss
     unlock_date: "2026-07-01 12:00:00"
+    location:
+      world: "world"
+      x: 100.0
+      y: 64.0
+      z: 200.0
+      radius: 5.0
 
   podzimni_special:
-    name: "&a✦ Turistická Známka: Podzimní Special ✦"
+    name: "&a✦ Turistická Zna mka: Podzimní Special ✦"
     lore:
       - "&7Vzácná limitovaná edice pro odvážné"
       - "&7průzkumníky podzimního BasicLandu."
       - ""
-      - "&8Typ: &cLimitovaná Edice"
+      - "&8Typ: &cLimitovaná Edice (Airdrop)"
     material: PAPER
     custom_model_data: 1003
+    # Tuto zna mku nelze najit na lokaci - pouze pres airdrop!
+    # location: (nenastaveno)
 
 # ─────────────────────────────────────────────
 #  AIRDROPY - LIMITOVANÉ EDICE
 #  Fyzický předmět spadne na dané souřadnice
-#  v definovaný čas. Chráněn PDC tagem před ClearLagem.
+#  v definovaný čas.
+#  Chráněn PDC tagem (turistika:airdrop_id) před ClearLagem.
 # ─────────────────────────────────────────────
 airdrops:
   airdrop_podzimni_01:
-    # ID turistické známky, která se udělí při sebrání
+    # ID turistické zna mky, která se udělí při sebrání
     stamp_id: "podzimni_special"
     # Přesný čas spawnu airdropu. Formát: yyyy-MM-dd HH:mm:ss
     spawn_time: "2026-07-15 20:00:00"
@@ -61,7 +91,7 @@ airdrops:
     x: 0.5
     y: 65.0
     z: 0.5
-    # Kolik prvních hráčů může daný airdrop sebrat (1 = only first!)
+    # Kolik prvních hráčů může daný airdrop sebrat
     max_pickups: 3
     # Jak dlouho (v minutách) leží předmět na zemi, než zmizí
     lifetime_minutes: 60
@@ -72,61 +102,59 @@ airdrops:
 gui:
   title: "&8✦ &bTuristický Deník &8✦"
 
-  # Předmět pro NEOBJEVENOU (ale odemčenou) známku
+  # Předmět pro NEOBJEVENOU (ale odemčenou) zna mku
   unknown_stamp:
     material: MAP
-    name: "&c&l? Neobjevená Známka ?"
+    name: "&c&l? Neobjevená Zna mka ?"
     lore:
-      - "&7Tuto turistickou známku jsi ještě"
+      - "&7Tuto turistickou zna mku jsi ještě"
       - "&7neobjevil. Prozkoumávej mapu BasicLandu!"
       - ""
       - "&8&oHint: Hledej ji v herním světě..."
 
-  # Předmět pro ČASOVĚ ZAMČENOU známku
+  # Předmět pro ČASOVĚ ZAMČENOU zna mku
   locked_stamp:
     material: CLOCK
     name: "&8&l⏳ Uzamčená Edice"
     lore:
-      - "&7Tato známka ještě nebyla odhalena."
+      - "&7Tato zna mka ještě nebyla odhalena."
       - ""
       - "&7Odemkne se: &e{unlock_date}"
       - "&8Sleduj oznámení na discordu!"
 
 # ─────────────────────────────────────────────
 #  MILNÍKY A ODMĚNY
-#  Klíč = počet získaných známek
+#  Klíč = počet získaných zna mek
 #  %player% = nahradí se jménem hráče
 # ─────────────────────────────────────────────
 milestones:
   1:
     commands:
-      - "broadcast &7[&bTuristika&7] &aHráč &e%player% &azískal svou první turistickou známku!"
+      - "broadcast &7[&bTuristika&7] &aHráč &e%player% &azískal svou první turistickou zna mku!"
   5:
     commands:
       - "give %player% diamond 3"
-      - "broadcast &7[&bTuristika&7] &e%player% &7nasbíral &e5 &7turistických známek!"
+      - "broadcast &7[&bTuristika&7] &e%player% &7nasbíral &e5 &7turistických zna mek!"
   10:
     commands:
       - "give %player% diamond 10"
       - "give %player% experience_bottle 5"
-      - "broadcast &7[&bTuristika&7] &6%player% &7dosahuje &6ZLATÉHO &7milníku &e10 známek!"
+      - "broadcast &7[&bTuristika&7] &6%player% &7dosahuje &6ZLATÉHO &7milníku &e10 zna mek!"
 
 # ─────────────────────────────────────────────
-#  CELKOVÝ POČET ZNÁMEK PRO DOKONČENÍ DENÍKU
-#  Určuje, kolik známek = kompletní deník (pro server-first odměny).
+#  CELKOVÝ POČET ZNAMEK PRO DOKONCENI DENIKU
 # ─────────────────────────────────────────────
 total_stamps_for_completion: 3
 
 # ─────────────────────────────────────────────
-#  ODMĚNY ZA SERVER-FIRST DOKONČENÍ DENÍKU
-#  rank 1/2/3 = první/druhý/třetí na celém serveru
+#  ODMENY ZA SERVER-FIRST DOKONCENI DENIKU
 # ─────────────────────────────────────────────
 server_first_rewards:
   1:
     commands:
       - "lp user %player% parent add turistamaster"
-      - "broadcast &d&l★ GRAND FINÁLE ★ &aHráč &d%player% &ajako ÚPLNĚ PRVNÍ na serveru dokončil Turistický Deník 2026!"
-      - "title %player% title {\"text\":\"GRAND FINÁLE!\",\"color\":\"light_purple\",\"bold\":true}"
+      - "broadcast &d&l★ GRAND FINALE ★ &aHráč &d%player% &ajako ÚPLNĚ PRVNÍ na serveru dokončil Turistický Deník 2026!"
+      - "title %player% title {\"text\":\"GRAND FINALE!\",\"color\":\"light_purple\",\"bold\":true}"
       - "title %player% subtitle {\"text\":\"Jsi první na celém serveru!\",\"color\":\"gold\"}"
       - "playsound entity.ender_dragon.death master %player% ~ ~ ~ 1 1"
   2:

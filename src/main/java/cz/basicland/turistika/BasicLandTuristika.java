@@ -8,6 +8,7 @@ import cz.basicland.turistika.database.DatabaseManager;
 import cz.basicland.turistika.gui.GuiManager;
 import cz.basicland.turistika.mechanics.AirdropManager;
 import cz.basicland.turistika.mechanics.HologramManager;
+import cz.basicland.turistika.mechanics.LocationManager;
 import cz.basicland.turistika.mechanics.MilestoneManager;
 import cz.basicland.turistika.mechanics.ServerFirstManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,6 +25,7 @@ public class BasicLandTuristika extends JavaPlugin {
     private ServerFirstManager serverFirstManager;
     private AirdropManager airdropManager;
     private HologramManager hologramManager;
+    private LocationManager locationManager;
 
     @Override
     public void onEnable() {
@@ -46,9 +48,13 @@ public class BasicLandTuristika extends JavaPlugin {
         this.serverFirstManager = new ServerFirstManager(this);
         this.airdropManager = new AirdropManager(this);
         this.hologramManager = new HologramManager(this);
+        this.locationManager = new LocationManager(this);
+        this.locationManager.loadLocations();
 
         // --- Prikazy ---
-        getCommand("turista").setExecutor(new TuristaCommand(this));
+        TuristaCommand turistaCmd = new TuristaCommand(this);
+        getCommand("turista").setExecutor(turistaCmd);
+        getCommand("turista").setTabCompleter(turistaCmd);
         getCommand("denik").setExecutor(new DenikCommand(this));
 
         // --- Listenery ---
@@ -59,6 +65,7 @@ public class BasicLandTuristika extends JavaPlugin {
         getServer().getScheduler().runTaskLater(this, () -> {
             airdropManager.startScheduler();
             hologramManager.loadFromDatabase();
+            locationManager.startCheckTask();
         }, 60L); // 3s po startu
 
         getLogger().info("Plugin uspesne nacten a pripraven!");
@@ -66,6 +73,7 @@ public class BasicLandTuristika extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (locationManager != null) locationManager.stopCheckTask();
         if (airdropManager != null) airdropManager.stopScheduler();
         if (hologramManager != null) hologramManager.shutdown();
         if (databaseManager != null) databaseManager.disconnect();
@@ -99,4 +107,5 @@ public class BasicLandTuristika extends JavaPlugin {
     public ServerFirstManager getServerFirstManager() { return serverFirstManager; }
     public AirdropManager getAirdropManager() { return airdropManager; }
     public HologramManager getHologramManager() { return hologramManager; }
+    public LocationManager getLocationManager() { return locationManager; }
 }
