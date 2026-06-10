@@ -1,31 +1,15 @@
-# =======================================================
-# |          BasicLand Turistika - Messages             |
-# |      Edituj texty zde, kód se nedotýkej!            |
-# =======================================================
-
-# Prefix před každou zprávou (použij "" pro žádný prefix)
 prefix: "&8[&b✦ Turistika&8]&7 "
-
-# ─── Obecné ───
 no_permission: "&cNemáš oprávnění k tomuto příkazu!"
 player_only: "&cTento příkaz může použít pouze hráč."
-
-# ─── Předmět hráče ─── Placeholder: {stamp_name}
-stamp_received: "&aGratulujeme! Získal jsi turistickou známku: &e{stamp_name}&a!"
-stamp_already_owned: "&cTuto turistickou známku již vlastníš."
-
-# ─── Admin zprávy ─── Placeholder: {stamp_id}, {player}
-stamp_given: "&aZnámka &e{stamp_id} &abyla udělena hráči &e{player}&a."
-stamp_not_found: "&cZnámka s ID &e{stamp_id} &cneexistuje v config.yml."
+stamp_received: "&aGratulujeme! Získal jsi turistickou zna mku: &e{stamp_name}&a!"
+stamp_already_owned: "&cTuto turistickou zna mku již vlastníš."
+stamp_given: "&aZna mka &e{stamp_id} &abyla udělena hráči &e{player}&a."
+stamp_not_found: "&cZna mka s ID &e{stamp_id} &cneexistuje v config.yml."
 player_not_found: "&cHráč &e{player} &cnení online na serveru."
-
-# ─── Broadcast při prvním objevení ─── Placeholder: {player}, {stamp_name}
 first_discovery: "&8[&6★ PRVNÍ OBJEV ★&8] &aHráč &e{player} &ajako &lúplně první &ana celém serveru objevil: &e{stamp_name}&a!"
-
-# ─── GUI navigace ───
 gui_previous_page: "&e← Předchozí strana"
 gui_next_page: "&eDalší strana →"
-
-# ─── Airdrop ─── (broadcast automaticky v AirdropManageru)
 airdrop_picked_up: "&b✦ &aSebrals limitovaný airdrop: &e{stamp_name}&a! Gratulujeme!"
-airdrop_already_owned: "&cTuto limitovanou edici již vlastníš, nemohou ti ji zaregistrovat!"
+airdrop_already_owned: "&cTuto limitovanou edici již vlastníš."
+streak_update: "&b⚡ &7Turistický streak: &e{streak} &7dní v řadě! Tak dál!"
+streak_broken: "&c⚡ Tvůj streak &e{streak} &cdní byl přerušen! Začínáš od 1."

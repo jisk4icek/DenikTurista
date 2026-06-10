@@ -6,11 +6,7 @@ import cz.basicland.turistika.config.ConfigManager;
 import cz.basicland.turistika.config.MessageManager;
 import cz.basicland.turistika.database.DatabaseManager;
 import cz.basicland.turistika.gui.GuiManager;
-import cz.basicland.turistika.mechanics.AirdropManager;
-import cz.basicland.turistika.mechanics.HologramManager;
-import cz.basicland.turistika.mechanics.LocationManager;
-import cz.basicland.turistika.mechanics.MilestoneManager;
-import cz.basicland.turistika.mechanics.ServerFirstManager;
+import cz.basicland.turistika.mechanics.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BasicLandTuristika extends JavaPlugin {
@@ -26,6 +22,8 @@ public class BasicLandTuristika extends JavaPlugin {
     private AirdropManager airdropManager;
     private HologramManager hologramManager;
     private LocationManager locationManager;
+    private RewardManager rewardManager;
+    private StreakManager streakManager;
 
     @Override
     public void onEnable() {
@@ -41,11 +39,14 @@ public class BasicLandTuristika extends JavaPlugin {
         this.databaseManager = new DatabaseManager(this);
         this.databaseManager.connect();
         this.databaseManager.createTables();
+        this.databaseManager.createStreakTable();
 
-        // --- Managery ---
+        // --- Managery (poradi zalezi na zavislosti) ---
+        this.rewardManager = new RewardManager(this);
         this.guiManager = new GuiManager(this);
         this.milestoneManager = new MilestoneManager(this);
         this.serverFirstManager = new ServerFirstManager(this);
+        this.streakManager = new StreakManager(this);
         this.airdropManager = new AirdropManager(this);
         this.hologramManager = new HologramManager(this);
         this.locationManager = new LocationManager(this);
@@ -61,12 +62,12 @@ public class BasicLandTuristika extends JavaPlugin {
         getServer().getPluginManager().registerEvents(guiManager, this);
         getServer().getPluginManager().registerEvents(airdropManager, this);
 
-        // --- Spustit planovane tasky (s malym zpozdenim pro nacteni svetu) ---
+        // --- Tasky s zpozdenim (svet musi byt nacten) ---
         getServer().getScheduler().runTaskLater(this, () -> {
             airdropManager.startScheduler();
             hologramManager.loadFromDatabase();
             locationManager.startCheckTask();
-        }, 60L); // 3s po startu
+        }, 60L);
 
         getLogger().info("Plugin uspesne nacten a pripraven!");
     }
@@ -97,7 +98,6 @@ public class BasicLandTuristika extends JavaPlugin {
     // ======================================================
     //  GETTERY
     // ======================================================
-
     public static BasicLandTuristika getInstance() { return instance; }
     public ConfigManager getConfigManager() { return configManager; }
     public MessageManager getMessageManager() { return messageManager; }
@@ -108,4 +108,6 @@ public class BasicLandTuristika extends JavaPlugin {
     public AirdropManager getAirdropManager() { return airdropManager; }
     public HologramManager getHologramManager() { return hologramManager; }
     public LocationManager getLocationManager() { return locationManager; }
+    public RewardManager getRewardManager() { return rewardManager; }
+    public StreakManager getStreakManager() { return streakManager; }
 }

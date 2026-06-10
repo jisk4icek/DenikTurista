@@ -1,6 +1,7 @@
 package cz.basicland.turistika.database;
 
 import cz.basicland.turistika.BasicLandTuristika;
+import cz.basicland.turistika.mechanics.StreakManager;
 import org.bukkit.Bukkit;
 
 import java.io.File;
@@ -300,6 +301,55 @@ public class DatabaseManager {
             try (PreparedStatement ps = connection.prepareStatement("UPDATE holograms SET entity_uuid = ? WHERE id = ?")) {
                 ps.setString(1, entityUUID != null ? entityUUID.toString() : null);
                 ps.setString(2, id);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }, dbExecutor);
+    }
+
+    // ======================================================
+    //  STREAK SYSTÉM
+    // ======================================================
+
+    public void createStreakTable() {
+        dbExecutor.submit(() -> {
+            try (Statement st = connection.createStatement()) {
+                st.execute("CREATE TABLE IF NOT EXISTS player_streaks (" +
+                        "uuid VARCHAR(36) NOT NULL PRIMARY KEY, " +
+                        "last_date VARCHAR(10) NOT NULL, " +
+                        "streak INT NOT NULL DEFAULT 1" +
+                        ");");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public CompletableFuture<StreakManager.StreakEntry> getStreakData(java.util.UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT last_date, streak FROM player_streaks WHERE uuid = ?")) {
+                ps.setString(1, uuid.toString());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return new StreakManager.StreakEntry(rs.getString("last_date"), rs.getInt("streak"));
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }, dbExecutor);
+    }
+
+    public CompletableFuture<Void> saveStreakData(java.util.UUID uuid, String date, int streak) {
+        return CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO player_streaks (uuid, last_date, streak) VALUES (?, ?, ?)")) {
+                ps.setString(1, uuid.toString());
+                ps.setString(2, date);
+                ps.setInt(3, streak);
                 ps.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();

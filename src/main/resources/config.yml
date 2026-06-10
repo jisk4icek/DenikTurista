@@ -1,41 +1,22 @@
 # =======================================================
-# |                                                     |
 # |            BasicLand Turistika - Config             |
 # |            Paper 1.20+ | github.com/jisk4icek       |
-# |                                                     |
 # =======================================================
 
 # ─────────────────────────────────────────────
-#  NASTAVENÍ TURISTICKÝCH ZNÁMEK
-#
-#  Každá známka má unikátní ID (klíč pod stamps:).
-#  ID se používá v příkazu: /turista give <hráč> <ID>
-#
-#  Jak nastavit fyzickou lokaci známky ve světě:
-#    1. Jdi na místo, kde chceš mít known ku
-#    2. Zadej: /turista setlocation <id_znamky> [radius]
-#    3. Plugin automaticky zapíše souřadnice do config.yml
-#    4. Hráč dostane zna mku, jakmile vstoupí do daného okruhu
-#
-#  Alternativně piš lokaci ručně pod klíč "location":
-#    location:
-#      world: "world"
-#      x: 100.0
-#      y: 64.0
-#      z: 200.0
-#      radius: 5.0   <- poloměr v metrech
+#  TURISTICKÉ ZNÁMKY
+#  Nastav lokaci přes: /turista setlocation <id> [radius]
 # ─────────────────────────────────────────────
 stamps:
   hrad_karlstejn:
     name: "&6✦ Turistická Známka: Hrad Karlštejn ✦"
     lore:
-      - "&7Tato slavnostní zna mka potvrzuje"
+      - "&7Tato slavnostní známka potvrzuje"
       - "&7tvou návštěvu malebného hradu Karlštejn."
       - ""
       - "&8Sbírka: &e2026 Letní Tour"
     material: PAPER
     custom_model_data: 1001
-    # Fyzická lokace ve světě (nastav přes /turista setlocation nebo ručně)
     location:
       world: "world"
       x: 0.5
@@ -44,15 +25,12 @@ stamps:
       radius: 8.0
 
   letni_festival_2026:
-    name: "&b✦ Turistická Zna mka: Letní Festival 2026 ✦"
+    name: "&b✦ Turistická Známka: Letní Festival 2026 ✦"
     lore:
       - "&7Exkluzivní vzpomínka na famózní"
       - "&7Letní Festival 2026 na BasicLandu!"
-      - ""
-      - "&8Dostupnost: &eOd 1. července 2026"
     material: PAPER
     custom_model_data: 1002
-    # Datum a čas odemčení. Formát: yyyy-MM-dd HH:mm:ss
     unlock_date: "2026-07-01 12:00:00"
     location:
       world: "world"
@@ -62,7 +40,7 @@ stamps:
       radius: 5.0
 
   podzimni_special:
-    name: "&a✦ Turistická Zna mka: Podzimní Special ✦"
+    name: "&a✦ Turistická Známka: Podzimní Special ✦"
     lore:
       - "&7Vzácná limitovaná edice pro odvážné"
       - "&7průzkumníky podzimního BasicLandu."
@@ -70,98 +48,113 @@ stamps:
       - "&8Typ: &cLimitovaná Edice (Airdrop)"
     material: PAPER
     custom_model_data: 1003
-    # Tuto zna mku nelze najit na lokaci - pouze pres airdrop!
-    # location: (nenastaveno)
 
 # ─────────────────────────────────────────────
-#  AIRDROPY - LIMITOVANÉ EDICE
-#  Fyzický předmět spadne na dané souřadnice
-#  v definovaný čas.
-#  Chráněn PDC tagem (turistika:airdrop_id) před ClearLagem.
+#  AIRDROPY
 # ─────────────────────────────────────────────
 airdrops:
   airdrop_podzimni_01:
-    # ID turistické zna mky, která se udělí při sebrání
     stamp_id: "podzimni_special"
-    # Přesný čas spawnu airdropu. Formát: yyyy-MM-dd HH:mm:ss
     spawn_time: "2026-07-15 20:00:00"
-    # Název světa
     world: "world"
-    # Přesné souřadnice dopadu
     x: 0.5
     y: 65.0
     z: 0.5
-    # Kolik prvních hráčů může daný airdrop sebrat
     max_pickups: 3
-    # Jak dlouho (v minutách) leží předmět na zemi, než zmizí
     lifetime_minutes: 60
 
 # ─────────────────────────────────────────────
-#  NASTAVENÍ GUI (/denik)
+#  NASTAVENÍ GUI
 # ─────────────────────────────────────────────
 gui:
   title: "&8✦ &bTuristický Deník &8✦"
-
-  # Předmět pro NEOBJEVENOU (ale odemčenou) zna mku
   unknown_stamp:
     material: MAP
-    name: "&c&l? Neobjevená Zna mka ?"
+    name: "&c&l? Neobjevená Známka ?"
     lore:
-      - "&7Tuto turistickou zna mku jsi ještě"
+      - "&7Tuto turistickou známku jsi ještě"
       - "&7neobjevil. Prozkoumávej mapu BasicLandu!"
       - ""
       - "&8&oHint: Hledej ji v herním světě..."
-
-  # Předmět pro ČASOVĚ ZAMČENOU zna mku
   locked_stamp:
     material: CLOCK
     name: "&8&l⏳ Uzamčená Edice"
     lore:
-      - "&7Tato zna mka ještě nebyla odhalena."
+      - "&7Tato známka ještě nebyla odhalena."
       - ""
       - "&7Odemkne se: &e{unlock_date}"
-      - "&8Sleduj oznámení na discordu!"
 
 # ─────────────────────────────────────────────
-#  MILNÍKY A ODMĚNY
-#  Klíč = počet získaných zna mek
-#  %player% = nahradí se jménem hráče
+#  MILNÍKY – ODMĚNY ZA POČET ZNÁMEK
+#
+#  Podporované typy příkazů:
+#   ● "give %player% diamond 5"              → Předmět hráči
+#   ● "eco give %player% 1000"               → EssentialsX peníze
+#   ● "lp user %player% parent add vip"      → LuckPerms rank
+#   ● "lp user %player% meta setprefix 100 [Turista]" → Prefix
+#   ● "broadcast &e%player% &7nasbíral X"   → Chat broadcast
+#   ● "title %player% &6Gratulace!|&7Dosáhl jsi N znamek" → Title/Subtitle
+#   ● "crates give %player% turisticky 1"   → Crate klíč
 # ─────────────────────────────────────────────
 milestones:
   1:
     commands:
-      - "broadcast &7[&bTuristika&7] &aHráč &e%player% &azískal svou první turistickou zna mku!"
+      - "broadcast &7[&bTuristika&7] &aHráč &e%player% &azískal svou první turistickou známku!"
   5:
     commands:
       - "give %player% diamond 3"
-      - "broadcast &7[&bTuristika&7] &e%player% &7nasbíral &e5 &7turistických zna mek!"
+      - "broadcast &7[&bTuristika&7] &e%player% &7nasbíral &e5 &7turistických známek!"
+      - "title %player% &e5 Turistických Známek!|&7Gratuluji, průzkumníku!"
   10:
     commands:
       - "give %player% diamond 10"
-      - "give %player% experience_bottle 5"
-      - "broadcast &7[&bTuristika&7] &6%player% &7dosahuje &6ZLATÉHO &7milníku &e10 zna mek!"
+      - "lp user %player% meta setprefix 100 [&6Turista&r]"
+      - "broadcast &7[&bTuristika&7] &6%player% &7dosahuje &6ZLATÉHO &7milníku – &e10 zna mek!"
+      - "title %player% &6✦ ZLATÝ TURISTA ✦|&710 zna mek nasbíráno!"
 
 # ─────────────────────────────────────────────
-#  CELKOVÝ POČET ZNAMEK PRO DOKONCENI DENIKU
+#  STREAK ODMĚNY – ODMĚNY ZA PO SOBĚ JDOUCÍ DNY
+#
+#  Hráč musí každý den najít alespoň 1 novou zna mku.
+#  Pokud den vynechá, streak se resetuje.
+# ─────────────────────────────────────────────
+streak_rewards:
+  3:
+    commands:
+      - "give %player% experience_bottle 5"
+      - "broadcast &e%player% &7má &63 dny &7v řadě turistický streak!"
+  7:
+    commands:
+      - "give %player% diamond 2"
+      - "lp user %player% meta setprefix 100 [&5Výzkumník&r]"
+      - "title %player% &57 Dní Streak!|&7Jsi opravdový průzkumník BasicLandu!"
+  14:
+    commands:
+      - "give %player% netherite_ingot 1"
+      - "give %player% diamond_block 2"
+      - "broadcast &d%player% &7má ohromujicich &d14 dní &7turistického streaku!"
+      - "title %player% &d⚡ MEGA STREAK ⚡|&714 dní bez přestávky!"
+
+# ─────────────────────────────────────────────
+#  SERVER-FIRST ODMĚNY ZA DOKONČENÍ CELÉHO DENÍKU
 # ─────────────────────────────────────────────
 total_stamps_for_completion: 3
 
-# ─────────────────────────────────────────────
-#  ODMENY ZA SERVER-FIRST DOKONCENI DENIKU
-# ─────────────────────────────────────────────
 server_first_rewards:
   1:
     commands:
       - "lp user %player% parent add turistamaster"
       - "broadcast &d&l★ GRAND FINALE ★ &aHráč &d%player% &ajako ÚPLNĚ PRVNÍ na serveru dokončil Turistický Deník 2026!"
-      - "title %player% title {\"text\":\"GRAND FINALE!\",\"color\":\"light_purple\",\"bold\":true}"
-      - "title %player% subtitle {\"text\":\"Jsi první na celém serveru!\",\"color\":\"gold\"}"
+      - "title %player% &d&lGRAND FINALE!|&aDokončil jsi jako PRVNÍ na serveru!"
       - "playsound entity.ender_dragon.death master %player% ~ ~ ~ 1 1"
+      - "eco give %player% 50000"
   2:
     commands:
-      - "give %player% diamond_block 5"
+      - "give %player% diamond_block 10"
       - "broadcast &b&l★ STŘÍBRNÝ TURISTA ★ &aHráč &b%player% &ajako druhý dokončil Turistický Deník 2026!"
+      - "eco give %player% 25000"
   3:
     commands:
-      - "give %player% emerald_block 5"
+      - "give %player% emerald_block 10"
       - "broadcast &6&l★ BRONZOVÝ TURISTA ★ &aHráč &6%player% &ajako třetí dokončil Turistický Deník 2026!"
+      - "eco give %player% 10000"
