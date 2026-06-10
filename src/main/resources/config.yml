@@ -1,0 +1,139 @@
+# =======================================================
+# |                                                     |
+# |            BasicLand Turistika - Config             |
+# |            Paper 1.20+ | github.com/jisk4icek       |
+# |                                                     |
+# =======================================================
+
+# ─────────────────────────────────────────────
+#  NASTAVENÍ TURISTICKÝCH ZNÁMEK
+#  Každá známka má unikátní ID (klíč).
+#  ID se používá v příkazu: /turista give <hráč> <ID>
+# ─────────────────────────────────────────────
+stamps:
+  hrad_karlstejn:
+    name: "&6✦ Turistická Známka: Hrad Karlštejn ✦"
+    lore:
+      - "&7Tato slavnostní známka potvrzuje"
+      - "&7tvou návštěvu malebného hradu Karlštejn."
+      - ""
+      - "&8Odesílatel: &7BasicLand Admin Team"
+      - "&8Sbírka: &e2026 Letní Tour"
+    material: PAPER
+    custom_model_data: 1001
+
+  letni_festival_2026:
+    name: "&b✦ Turistická Známka: Letní Festival 2026 ✦"
+    lore:
+      - "&7Exkluzivní vzpomínka na famózní"
+      - "&7Letní Festival 2026 na BasicLandu!"
+      - ""
+      - "&8Dostupnost: &eOd 1. července 2026"
+    material: PAPER
+    custom_model_data: 1002
+    # Datum a čas odemčení. Formát: yyyy-MM-dd HH:mm:ss
+    unlock_date: "2026-07-01 12:00:00"
+
+  podzimni_special:
+    name: "&a✦ Turistická Známka: Podzimní Special ✦"
+    lore:
+      - "&7Vzácná limitovaná edice pro odvážné"
+      - "&7průzkumníky podzimního BasicLandu."
+      - ""
+      - "&8Typ: &cLimitovaná Edice"
+    material: PAPER
+    custom_model_data: 1003
+
+# ─────────────────────────────────────────────
+#  AIRDROPY - LIMITOVANÉ EDICE
+#  Fyzický předmět spadne na dané souřadnice
+#  v definovaný čas. Chráněn PDC tagem před ClearLagem.
+# ─────────────────────────────────────────────
+airdrops:
+  airdrop_podzimni_01:
+    # ID turistické známky, která se udělí při sebrání
+    stamp_id: "podzimni_special"
+    # Přesný čas spawnu airdropu. Formát: yyyy-MM-dd HH:mm:ss
+    spawn_time: "2026-07-15 20:00:00"
+    # Název světa
+    world: "world"
+    # Přesné souřadnice dopadu
+    x: 0.5
+    y: 65.0
+    z: 0.5
+    # Kolik prvních hráčů může daný airdrop sebrat (1 = only first!)
+    max_pickups: 3
+    # Jak dlouho (v minutách) leží předmět na zemi, než zmizí
+    lifetime_minutes: 60
+
+# ─────────────────────────────────────────────
+#  NASTAVENÍ GUI (/denik)
+# ─────────────────────────────────────────────
+gui:
+  title: "&8✦ &bTuristický Deník &8✦"
+
+  # Předmět pro NEOBJEVENOU (ale odemčenou) známku
+  unknown_stamp:
+    material: MAP
+    name: "&c&l? Neobjevená Známka ?"
+    lore:
+      - "&7Tuto turistickou známku jsi ještě"
+      - "&7neobjevil. Prozkoumávej mapu BasicLandu!"
+      - ""
+      - "&8&oHint: Hledej ji v herním světě..."
+
+  # Předmět pro ČASOVĚ ZAMČENOU známku
+  locked_stamp:
+    material: CLOCK
+    name: "&8&l⏳ Uzamčená Edice"
+    lore:
+      - "&7Tato známka ještě nebyla odhalena."
+      - ""
+      - "&7Odemkne se: &e{unlock_date}"
+      - "&8Sleduj oznámení na discordu!"
+
+# ─────────────────────────────────────────────
+#  MILNÍKY A ODMĚNY
+#  Klíč = počet získaných známek
+#  %player% = nahradí se jménem hráče
+# ─────────────────────────────────────────────
+milestones:
+  1:
+    commands:
+      - "broadcast &7[&bTuristika&7] &aHráč &e%player% &azískal svou první turistickou známku!"
+  5:
+    commands:
+      - "give %player% diamond 3"
+      - "broadcast &7[&bTuristika&7] &e%player% &7nasbíral &e5 &7turistických známek!"
+  10:
+    commands:
+      - "give %player% diamond 10"
+      - "give %player% experience_bottle 5"
+      - "broadcast &7[&bTuristika&7] &6%player% &7dosahuje &6ZLATÉHO &7milníku &e10 známek!"
+
+# ─────────────────────────────────────────────
+#  CELKOVÝ POČET ZNÁMEK PRO DOKONČENÍ DENÍKU
+#  Určuje, kolik známek = kompletní deník (pro server-first odměny).
+# ─────────────────────────────────────────────
+total_stamps_for_completion: 3
+
+# ─────────────────────────────────────────────
+#  ODMĚNY ZA SERVER-FIRST DOKONČENÍ DENÍKU
+#  rank 1/2/3 = první/druhý/třetí na celém serveru
+# ─────────────────────────────────────────────
+server_first_rewards:
+  1:
+    commands:
+      - "lp user %player% parent add turistamaster"
+      - "broadcast &d&l★ GRAND FINÁLE ★ &aHráč &d%player% &ajako ÚPLNĚ PRVNÍ na serveru dokončil Turistický Deník 2026!"
+      - "title %player% title {\"text\":\"GRAND FINÁLE!\",\"color\":\"light_purple\",\"bold\":true}"
+      - "title %player% subtitle {\"text\":\"Jsi první na celém serveru!\",\"color\":\"gold\"}"
+      - "playsound entity.ender_dragon.death master %player% ~ ~ ~ 1 1"
+  2:
+    commands:
+      - "give %player% diamond_block 5"
+      - "broadcast &b&l★ STŘÍBRNÝ TURISTA ★ &aHráč &b%player% &ajako druhý dokončil Turistický Deník 2026!"
+  3:
+    commands:
+      - "give %player% emerald_block 5"
+      - "broadcast &6&l★ BRONZOVÝ TURISTA ★ &aHráč &6%player% &ajako třetí dokončil Turistický Deník 2026!"

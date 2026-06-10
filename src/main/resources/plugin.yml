@@ -1,0 +1,19 @@
+name: BasicLandTuristika
+version: '${project.version}'
+main: cz.basicland.turistika.BasicLandTuristika
+api-version: '1.20'
+prefix: Turistika
+authors: [ "BasicLand" ]
+description: Turisticky denik, ziskavani znamek a airdropy pro letni event!
+commands:
+  denik:
+    description: Otevre GUI turistickeho deniku.
+    aliases: [turistickydenik, td]
+  turista:
+    description: Hlavni admin prikaz pro BasicLandTuristika.
+    permission: turista.admin
+    usage: /turista <give|top|list|info|hologram|reload>
+permissions:
+  turista.admin:
+    description: Sprava pluginu Turistika (davani znamek, airdropy, hologramy, reload)
+    default: op
