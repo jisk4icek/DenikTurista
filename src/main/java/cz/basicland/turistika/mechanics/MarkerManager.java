@@ -176,14 +176,6 @@ public class MarkerManager implements Listener {
 
         // Levá ruka: turistická hůl
         eq.setItemInOffHand(new ItemStack(Material.STICK), false);
-
-        // Drop chance = 0 (nic se nevypadne)
-        eq.setHelmetDropChance(0f);
-        eq.setChestplateDropChance(0f);
-        eq.setLeggingsDropChance(0f);
-        eq.setBootsDropChance(0f);
-        eq.setItemInMainHandDropChance(0f);
-        eq.setItemInOffHandDropChance(0f);
     }
 
     /** Vytvoří barvený kožený kus zbroje. */
