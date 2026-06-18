@@ -71,6 +71,8 @@ public class DatabaseManager {
                 statement.execute("CREATE TABLE IF NOT EXISTS unlocked_stamps (" +
                         "uuid VARCHAR(36) NOT NULL, " +
                         "stamp_id VARCHAR(64) NOT NULL, " +
+                        "points INTEGER NOT NULL DEFAULT 1, " +
+                        "obtained_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                         "PRIMARY KEY (uuid, stamp_id)" +
                         ");");
 
@@ -86,7 +88,6 @@ public class DatabaseManager {
                         "player_name VARCHAR(16) NOT NULL" +
                         ");");
 
-                // Tabulka pro TextDisplay hologramy (Faze 4)
                 statement.execute("CREATE TABLE IF NOT EXISTS holograms (" +
                         "id VARCHAR(64) NOT NULL PRIMARY KEY, " +
                         "world VARCHAR(64), " +
@@ -94,11 +95,31 @@ public class DatabaseManager {
                         "entity_uuid VARCHAR(36)" +
                         ");");
 
-                plugin.getLogger().info("SQLite tabulky jsou pripraveny.");
+                plugin.getLogger().info("SQLite tabulky jsou připraveny.");
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            // v2.4 – migrace: přidej sloupce pokud neexistují (ALTER TABLE ignoruje pokud sloupec je)
+            migrateAddColumnIfAbsent("unlocked_stamps", "points",   "INTEGER NOT NULL DEFAULT 1");
+            migrateAddColumnIfAbsent("unlocked_stamps", "obtained_at", "DATETIME DEFAULT CURRENT_TIMESTAMP");
         });
+    }
+
+    /** Bezpečně přidá sloupec pokud neexistuje (SQLite nemá IF NOT EXISTS pro ALTER TABLE). */
+    private void migrateAddColumnIfAbsent(String table, String column, String definition) {
+        try (Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rs.next()) {
+                if (rs.getString("name").equalsIgnoreCase(column)) return; // Sloupec už existuje
+            }
+        } catch (SQLException ignored) {}
+        try (Statement st = connection.createStatement()) {
+            st.execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+            plugin.getLogger().info("[DB Migrace] Přidán sloupec '" + column + "' do tabulky '" + table + "'.");
+        } catch (SQLException e) {
+            plugin.getLogger().warning("[DB Migrace] Nelze přidat '" + column + "': " + e.getMessage());
+        }
     }
 
     // ======================================================
@@ -139,12 +160,21 @@ public class DatabaseManager {
         }, dbExecutor);
     }
 
-    public CompletableFuture<Void> addStamp(UUID uuid, String stampId) {
+    /**
+     * Přidá známku hráči s bodovým ohodnocením.
+     * Starší záznamy bez bodů mají defaultně 1 bod (migrace).
+     *
+     * @param uuid    UUID hráče
+     * @param stampId ID známky
+     * @param points  Body za tuto známku (dle rarity)
+     */
+    public CompletableFuture<Void> addStamp(UUID uuid, String stampId, int points) {
         return CompletableFuture.runAsync(() -> {
-            String query = "INSERT OR IGNORE INTO unlocked_stamps (uuid, stamp_id) VALUES (?, ?)";
+            String query = "INSERT OR IGNORE INTO unlocked_stamps (uuid, stamp_id, points) VALUES (?, ?, ?)";
             try (PreparedStatement ps = connection.prepareStatement(query)) {
                 ps.setString(1, uuid.toString());
                 ps.setString(2, stampId);
+                ps.setInt(3, points);
                 ps.executeUpdate();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -152,39 +182,82 @@ public class DatabaseManager {
         }, dbExecutor);
     }
 
+    /** @deprecated Použij addStamp(uuid, stampId, points) – zachováno pro zpětnou kompatibilitu */
+    @Deprecated
+    public CompletableFuture<Void> addStamp(UUID uuid, String stampId) {
+        return addStamp(uuid, stampId, 1);
+    }
+
     // ======================================================
     //  TOP LEADERBOARD
     // ======================================================
 
     /**
-     * Vraci seznam hracu serazeny podle poctu odemcenych znamek (TOP N).
-     * @param limit maximalni pocet zaznamu
-     * @return usporadany seznam dvojic: [player_name, count]
+     * TOP N hráčů seřazených podle počtu sesbíraných známek.
      */
     public CompletableFuture<List<Map.Entry<String, Integer>>> getTopPlayers(int limit) {
         return CompletableFuture.supplyAsync(() -> {
             List<Map.Entry<String, Integer>> top = new ArrayList<>();
-            String query = "SELECT uuid, COUNT(*) as cnt FROM unlocked_stamps GROUP BY uuid ORDER BY cnt DESC LIMIT ?";
-            try (PreparedStatement ps = connection.prepareStatement(query)) {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT uuid, COUNT(*) as cnt FROM unlocked_stamps GROUP BY uuid ORDER BY cnt DESC LIMIT ?")) {
                 ps.setInt(1, limit);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String uuidStr = rs.getString("uuid");
-                        int count = rs.getInt("cnt");
-                        // Pokus ziskat jmeno z Bukkit cache (muze byt offline)
-                        String name = uuidStr;
-                        try {
-                            org.bukkit.OfflinePlayer op = Bukkit.getOfflinePlayer(UUID.fromString(uuidStr));
-                            if (op.getName() != null) name = op.getName();
-                        } catch (Exception ignored) {}
-                        top.add(new AbstractMap.SimpleEntry<>(name, count));
+                        String name = resolvePlayerName(uuidStr);
+                        top.add(new AbstractMap.SimpleEntry<>(name, rs.getInt("cnt")));
                     }
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            } catch (SQLException e) { e.printStackTrace(); }
             return top;
         }, dbExecutor);
+    }
+
+    /**
+     * v2.4: TOP N hráčů seřazených podle celkových BODŮ (SUM(points)).
+     * Body se liší dle rarity: COMMON=1, RARE=3, EPIC=5, LEGENDARY=10.
+     */
+    public CompletableFuture<List<Map.Entry<String, Integer>>> getTopPlayersByPoints(int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Map.Entry<String, Integer>> top = new ArrayList<>();
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT uuid, SUM(points) as total FROM unlocked_stamps GROUP BY uuid ORDER BY total DESC LIMIT ?")) {
+                ps.setInt(1, limit);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String uuidStr = rs.getString("uuid");
+                        String name = resolvePlayerName(uuidStr);
+                        top.add(new AbstractMap.SimpleEntry<>(name, rs.getInt("total")));
+                    }
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+            return top;
+        }, dbExecutor);
+    }
+
+    /**
+     * v2.4: Celkový počet bodů konkrétního hráče.
+     */
+    public CompletableFuture<Integer> getPlayerPoints(UUID uuid) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "SELECT COALESCE(SUM(points), 0) as total FROM unlocked_stamps WHERE uuid = ?")) {
+                ps.setString(1, uuid.toString());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return rs.getInt("total");
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+            return 0;
+        }, dbExecutor);
+    }
+
+    /** Helper: převede UUID string na jméno hráče (online/offline cache). */
+    private String resolvePlayerName(String uuidStr) {
+        try {
+            org.bukkit.OfflinePlayer op = Bukkit.getOfflinePlayer(UUID.fromString(uuidStr));
+            if (op.getName() != null) return op.getName();
+        } catch (Exception ignored) {}
+        return uuidStr.substring(0, 8) + "...";
     }
 
     // ======================================================

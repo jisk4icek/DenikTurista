@@ -1,17 +1,31 @@
-﻿# ================================================================
-# |  BasicLand Turistika v2.0 – config.yml                       |
+# ================================================================
+# |  BasicLand Turistika v2.4 – config.yml                       |
 # |  Paper 1.20+ | SQLite | Zero Dependencies                     |
 # ================================================================
 
 # ─────────────────────────────────────────────────────────────
-#  TURISTICKÉ ZNAMKY
+#  TURISTICKÉ ZNÁMKY
 #
-#  Nastav fyzickou lokaci:  /turista setlocation <id> [radius]
-#  Spawne NPC:              /turista npc spawn <id>
+#  RYCHLÝ ADMIN SETUP (jedno místo na mapě = jeden příkaz!):
+#    1. Jdi na místo kde chceš mít známku
+#    2. /turista setup <id> [radius]
+#    → Automaticky nastaví lokaci + spawne ArmorStand průvodce
+#
+#  Manuální nastavení (pokud chceš víc kontroly):
+#    Nastav lokaci:  /turista setlocation <id> [radius]
+#    Spawne NPC:     /turista npc spawn <id>
+#    Spawne Marker:  /turista marker spawn <id>
+#    Udělej nástěnku: /turista board spawn
+#
+#  RARITY SYSTÉM (v2.4):
+#    COMMON    – Bílá  glow, 1 bod  (běžná turistická destinace)
+#    RARE      – Modrá glow, 3 body (vzácné místo, náročnější přístup)
+#    EPIC      – Fialová glow, 5 bodů (epická lokace nebo NPC)
+#    LEGENDARY – Zlatá glow, 10 bodů (pouze přes Airdrop nebo speciální event)
 # ─────────────────────────────────────────────────────────────
 stamps:
   hrad_karlstejn:
-    name: "&6✦ Turistická známka: Hrad Karlštejn ✦"
+    name: "&6✦ Turistická Známka: Hrad Karlštejn ✦"
     lore:
       - "&7Tato slavnostní známka potvrzuje"
       - "&7tvou návštěvu malebného hradu Karlštejn."
@@ -19,7 +33,8 @@ stamps:
       - "&8Sbírka: &e2026 Letní Tour"
     material: PAPER
     custom_model_data: 1001
-    # Fyzická lokace – nastav příkazem: /turista setlocation hrad_karlstejn 8
+    rarity: RARE        # COMMON(1b) / RARE(3b) / EPIC(5b) / LEGENDARY(10b)
+    # Fyzická lokace – nastav příkazem: /turista setup hrad_karlstejn 8
     # location:
     #   world: "world"
     #   x: 0.5
@@ -28,19 +43,20 @@ stamps:
     #   radius: 8.0
 
   letni_festival:
-    name: "&b✦ Turistická známka: Letní Festival 2026 ✦"
+    name: "&b✦ Turistická Známka: Letní Festival 2026 ✦"
     lore:
       - "&7Exkluzivní vzpomínka na famózní"
       - "&7Letní Festival 2026 na BasicLandu!"
     material: PAPER
     custom_model_data: 1002
+    rarity: EPIC        # Festivalová – vzácnější
     # Odemkne se určitého dne
     unlock_date: "2026-07-01 12:00:00"
     # Vyprší – po tomto datu nelze získat
     expire_date: "2026-08-31 23:59:59"
 
   vecer_znamka:
-    name: "&9✦ Večerní známka: Západ Slunce ✦"
+    name: "&9✦ Večerní Známka: Západ Slunce ✦"
     lore:
       - "&7Vzácná známka dostupná jen za soumraku."
       - "&7Navštiv toto místo v podvečer!"
@@ -48,20 +64,22 @@ stamps:
       - "&8Dostupná: &718:00 – 22:00"
     material: PAPER
     custom_model_data: 1003
+    rarity: COMMON      # Denní – běžná, jen časově omezená
     # Denní časové okno – dostupná jen od–do
     time_window:
       from: "18:00"
       until: "22:00"
 
   podzimni_special:
-    name: "&a✦ Limitovaná Edice: Podzimní Special ✦"
+    name: "&6✦ Limitovaná Edice: Podzimní Special ✦"
     lore:
       - "&7Vzácná limitovaná edice pro odvážné"
       - "&7průzkumníky podzimního BasicLandu."
       - ""
-      - "&8Typ: &cLimitovaná Edice (Airdrop)"
+      - "&8Typ: &cLegendární (Airdrop)"
     material: PAPER
     custom_model_data: 1004
+    rarity: LEGENDARY   # Pouze přes Airdrop → 10 bodů!
 
 # ─────────────────────────────────────────────────────────────
 #  AIRDROPY

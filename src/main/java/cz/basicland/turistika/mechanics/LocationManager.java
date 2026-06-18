@@ -118,15 +118,19 @@ public class LocationManager {
             double dist2D = dist2D(player.getLocation(), sl.x, sl.z);
 
             if (dist2D <= sl.radius) {
-                // === HRAC JE V DOSAHU ===
+                // === HRÁČ JE V DOSAHU ===
                 plugin.getDatabaseManager().hasStamp(player.getUniqueId(), stampId).thenAccept(has -> {
                     if (!has) {
-                        plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() ->
+                        int points = stamp.getPoints();
+                        cz.basicland.turistika.config.ConfigManager.Rarity rarity = stamp.getRarity();
+                        plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId, points).thenRun(() ->
                             Bukkit.getScheduler().runTask(plugin, () -> {
                                 if (!player.isOnline()) return;
                                 player.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                                         .replace("{stamp_name}", stamp.getName()));
-                                player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+                                player.sendMessage(cz.basicland.turistika.config.MessageManager.colorize(
+                                        rarity.color + "[" + rarity.displayName + "] &7Získal jsi &e+" + points + " bodů!"));
+                                player.playSound(player.getLocation(), rarity.collectSound, 1f, rarity.collectPitch);
                                 player.spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation().add(0,1,0), 40, 0.4, 0.4, 0.4, 0.1);
                                 player.spawnParticle(Particle.VILLAGER_HAPPY, player.getLocation().add(0,1,0), 15, 0.5, 0.5, 0.5, 0.05);
 
@@ -138,6 +142,7 @@ public class LocationManager {
                         );
                     }
                 });
+
 
             } else if (dist2D <= sl.radius * 4) {
                 // === HRAC JE BLIZKO (hint zone) ===

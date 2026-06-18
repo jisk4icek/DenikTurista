@@ -168,15 +168,18 @@ public class NpcManager implements Listener {
                 return;
             }
 
-            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() -> {
+            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId, stamp.getPoints()).thenRun(() -> {
                 Bukkit.getScheduler().runTask(plugin, () -> {
+                    cz.basicland.turistika.config.ConfigManager.Rarity rarity = stamp.getRarity();
                     player.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                             .replace("{stamp_name}", stamp.getName()));
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+                    player.sendMessage(MessageManager.colorize(
+                            rarity.color + "[" + rarity.displayName + "] &7Získal jsi &e+" + stamp.getPoints() + " bodů!"));
+                    player.playSound(player.getLocation(), rarity.collectSound, 1f, rarity.collectPitch);
                     player.spawnParticle(Particle.VILLAGER_HAPPY, player.getLocation().add(0,1,0), 30, 0.5, 0.5, 0.5, 0);
                     player.spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation().add(0,1,0), 40, 0.4, 0.4, 0.4, 0.1);
 
-                    // NPC dialogovy "efekt" – zprava z NPC
+                    // NPC dialogový "efekt" – zpráva z NPC
                     player.sendMessage(MessageManager.colorize("&e&l✦ NPC: &r&7Vítej, průzkumníku! Tvá návštěva byla zaznamenána."));
 
                     plugin.getServerFirstManager().handleFirstDiscovery(player, stampId, stamp.getName());

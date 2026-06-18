@@ -2,6 +2,7 @@ package cz.basicland.turistika.mechanics;
 
 import cz.basicland.turistika.BasicLandTuristika;
 import cz.basicland.turistika.config.ConfigManager;
+import cz.basicland.turistika.config.ConfigManager.Rarity;
 import cz.basicland.turistika.config.ConfigManager.StampData;
 import cz.basicland.turistika.config.MessageManager;
 import org.bukkit.*;
@@ -16,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.EulerAngle;
 
 import java.util.*;
@@ -60,9 +62,12 @@ public class MarkerManager implements Listener {
 
         ArmorStand as = loc.getWorld().spawn(loc, ArmorStand.class, a -> {
             // ─── Základní vlastnosti ───────────────────────────────────
-            a.setCustomName(MessageManager.colorize("&b&l✦ &e" + stripColor(stamp.getName()) + " &b&l✦"));
+            a.setCustomName(MessageManager.colorize(
+                    stamp.getRarity().color + "&l✦ &r" +
+                    stamp.getRarity().color + stripColor(stamp.getName()) + " &r" +
+                    stamp.getRarity().color + "&l✦"));
             a.setCustomNameVisible(true);
-            a.setGlowing(true);           // Svítivý outline – hráč ho vidí z dálky
+            a.setGlowing(true);           // Svítivý outline – barva dle rarity
             a.setInvulnerable(true);
             a.setGravity(false);
             a.setArms(true);
@@ -70,7 +75,7 @@ public class MarkerManager implements Listener {
             a.setVisible(true);
             a.setPersistent(true);
             a.setRemoveWhenFarAway(false);
-            a.setSmall(false);            // Plná velikost (ne malý)
+            a.setSmall(false);
 
             // ─── AI-designed POZA: "Vítající turistický průvodce" ─────
             //
@@ -120,6 +125,9 @@ public class MarkerManager implements Listener {
             pdc.set(MARKER_STAMP_KEY, PersistentDataType.STRING, stampId);
             pdc.set(MARKER_TAG,       PersistentDataType.BYTE,   (byte) 1);
         });
+
+        // v2.4: Nastav barvu glow outline dle rarity přes Scoreboard Team
+        setRarityGlowColor(as, stamp.getRarity());
 
         activeMarkers.put(stampId, as.getUniqueId());
         plugin.getDatabaseManager().saveMarker(stampId, loc, as.getUniqueId());
@@ -188,8 +196,30 @@ public class MarkerManager implements Listener {
         return item;
     }
 
+    /**
+     * v2.4: Nastaví barvu glow outline ArmorStandu dle rarity přes Scoreboard Team.
+     * Minecraft: entity s setGlowing(true) dostane outline barvu svého Scoreboard Teamu.
+     */
+    private void setRarityGlowColor(ArmorStand as, Rarity rarity) {
+        org.bukkit.scoreboard.Scoreboard sb = Bukkit.getScoreboardManager().getMainScoreboard();
+        String teamName = "turistika_" + rarity.name();
+        Team team = sb.getTeam(teamName);
+        if (team == null) {
+            team = sb.registerNewTeam(teamName);
+            team.setColor(rarity.glowColor);
+        }
+        String entry = as.getUniqueId().toString();
+        // Odeber ze starých rarity teamů (pokud přesouváme)
+        for (Rarity r : Rarity.values()) {
+            Team old = sb.getTeam("turistika_" + r.name());
+            if (old != null) old.removeEntry(entry);
+        }
+        team.addEntry(entry);
+    }
+
     // ======================================================
     //  REMOVE / LOAD / SHUTDOWN
+
     // ======================================================
 
     public void removeMarker(String stampId) {
@@ -271,13 +301,16 @@ public class MarkerManager implements Listener {
                 return;
             }
 
-            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() -> {
+            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId, stamp.getPoints()).thenRun(() -> {
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     if (!player.isOnline()) return;
 
+                    Rarity rarity = stamp.getRarity();
                     player.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                             .replace("{stamp_name}", stamp.getName()));
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+                    player.sendMessage(MessageManager.colorize(
+                            rarity.color + "[" + rarity.displayName + "] &7Získal jsi &e+" + stamp.getPoints() + " bodů!"));
+                    player.playSound(player.getLocation(), rarity.collectSound, 1f, rarity.collectPitch);
                     player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.5f, 1.5f);
 
                     Location markerLoc = entity.getLocation().add(0, 1.5, 0);

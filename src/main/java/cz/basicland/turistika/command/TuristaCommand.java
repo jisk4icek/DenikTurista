@@ -46,6 +46,7 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
             case "reload":         handleReload(sender);                break;
             case "list":           handleList(sender);                  break;
             case "info":           handleInfo(sender, args);            break;
+            case "setup":          handleSetup(sender, args);           break;
             case "setlocation":    handleSetLocation(sender, args);     break;
             case "removelocation": handleRemoveLocation(sender, args);  break;
             case "locations":      handleLocations(sender);             break;
@@ -78,11 +79,15 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
 
         plugin.getDatabaseManager().hasStamp(target.getUniqueId(), args[2]).thenAccept(has -> {
             if (has) { sender.sendMessage(ChatUtil.error("Hrac &e" + target.getName() + " &cuz tuto znamku ma.")); return; }
-            plugin.getDatabaseManager().addStamp(target.getUniqueId(), args[2]).thenRun(() ->
+            plugin.getDatabaseManager().addStamp(target.getUniqueId(), args[2], stamp.getPoints()).thenRun(() ->
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     target.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                             .replace("{stamp_name}", stamp.getName()));
-                    sender.sendMessage(ChatUtil.ok("Znamka &e" + args[2] + " &audélena hraci &e" + target.getName() + "&a."));
+                    target.sendMessage(ChatUtil.colorize(stamp.getRarity().color +
+                            "[" + stamp.getRarity().displayName + "] &7Získal jsi &e+" + stamp.getPoints() + " bodů!"));
+                    target.playSound(target.getLocation(), stamp.getRarity().collectSound, 1f, stamp.getRarity().collectPitch);
+                    sender.sendMessage(ChatUtil.ok("Znamka &e" + args[2] + " &a[" + stamp.getRarity().displayName +
+                            ", &e" + stamp.getPoints() + "b&a] udělena hraci &e" + target.getName() + "&a."));
                     plugin.getServerFirstManager().handleFirstDiscovery(target, args[2], stamp.getName());
                     plugin.getDatabaseManager().getUnlockedStamps(target.getUniqueId())
                             .thenAccept(s -> plugin.getMilestoneManager().checkMilestones(target, s.size()));
@@ -92,29 +97,36 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
     }
 
     // ======================================================
-    //  /turista top
+    //  /turista top  –  Bodový žebříček (v2.4)
     // ======================================================
 
     private void handleTop(CommandSender sender) {
         sender.sendMessage(ChatUtil.info("Načítám žebříček..."));
-        int total = plugin.getConfigManager().getStamps().size();
-        plugin.getDatabaseManager().getTopPlayers(10).thenAccept(top ->
+        int totalStamps = plugin.getConfigManager().getStamps().size();
+
+        // Spoči max. možné body
+        int maxPoints = plugin.getConfigManager().getStamps().values().stream()
+                .mapToInt(StampData::getPoints).sum();
+
+        plugin.getDatabaseManager().getTopPlayersByPoints(10).thenAccept(top ->
             Bukkit.getScheduler().runTask(plugin, () -> {
                 List<String> lines = new ArrayList<>();
                 if (top.isEmpty()) {
                     lines.add("&7Zatím žádní hráči.");
+                    lines.add("&7Sbírej známky pro zápis do žebříčku!");
                 } else {
-                    String[] medals = {"&6★ 1.", "&f★ 2.", "&c★ 3."};
+                    String[] medals = {"&6&l★ 1.", "&f&l★ 2.", "&c&l★ 3."};
                     for (int i = 0; i < top.size(); i++) {
-                        String rank = i < 3 ? medals[i] : "&7" + (i+1) + ".";
-                        int pct = total > 0 ? (top.get(i).getValue() * 100) / total : 0;
+                        String rank  = i < 3 ? medals[i] : "&7" + (i+1) + ".";
+                        int    pts   = top.get(i).getValue();
+                        int    pct   = maxPoints > 0 ? (pts * 100) / maxPoints : 0;
                         lines.add(rank + " &e" + top.get(i).getKey() +
-                                " &8» &a" + top.get(i).getValue() + " &7zn. &8(&e" + pct + "%&8)");
+                                " &8» &a" + pts + "b &8(&e" + pct + "%&8)");
                     }
                 }
                 lines.add("");
-                lines.add("&7Celkem známek v eventu: &e" + total);
-                ChatUtil.sendBox(sender, "TOP TURISTÉ ✦", lines.toArray(new String[0]));
+                lines.add("&7Max. možné body: &e" + maxPoints + "b &8| &7Známek: &e" + totalStamps);
+                ChatUtil.sendBox(sender, "TOP TURISTÉ ✦ Bodový žebříček", lines.toArray(new String[0]));
             })
         );
     }
@@ -306,20 +318,23 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
         Map<String, StampData> stamps = plugin.getConfigManager().getStamps();
         Map<String, LocationManager.StampLocation> locs = plugin.getLocationManager().getStampLocations();
         Map<String, java.util.UUID> npcs = plugin.getNpcManager().getActiveNpcs();
+        Map<String, java.util.UUID> markers = plugin.getMarkerManager().getActiveMarkers();
         List<String> lines = new ArrayList<>();
-        lines.add("&7Celkem &e" + stamps.size() + " &7znamek:");
-        lines.add("&8(status) [LOC] [NPC] ID");
+        lines.add("&7Celkem &e" + stamps.size() + " &7známek  &8| &7Max. body: &e" +
+                stamps.values().stream().mapToInt(StampData::getPoints).sum() + "b");
+        lines.add("&8(status) [LOC] [NPC] [AS] RARITY  ID");
         for (Map.Entry<String, StampData> e : stamps.entrySet()) {
             StampData s = e.getValue();
             String status = s.isLocked() ? "&c[LOCK]" : (s.isExpired() ? "&4[EXP]" : s.isOutOfWindow() ? "&6[WIN]" : "&a[OK] ");
-            String loc = locs.containsKey(e.getKey()) ? "&b[LOC]" : "&8[---]";
-            String npc = npcs.containsKey(e.getKey()) ? "&d[NPC]" : "&8[---]";
-            lines.add(status + " " + loc + " " + npc + " &e" + e.getKey());
+            String loc    = locs.containsKey(e.getKey())    ? "&b[LOC]" : "&8[---]";
+            String npc    = npcs.containsKey(e.getKey())    ? "&d[NPC]" : "&8[---]";
+            String as     = markers.containsKey(e.getKey()) ? "&e[AS] " : "&8[---]";
+            String rarity = s.getRarity().color + "[" + s.getRarity().displayName.substring(0,3) + " " + s.getPoints() + "b]";
+            lines.add(status + " " + loc + " " + npc + " " + as + " " + rarity + " &e" + e.getKey());
         }
         lines.add("");
-        lines.add("&a[OK] &7dostupna  &c[LOCK] &7zamcena  &6[WIN] &7mimo cas  &4[EXP] &7expirovala");
-        lines.add("&b[LOC] &7ma lokaci  &d[NPC] &7ma NPC");
-        ChatUtil.sendBox(sender, "SEZNAM ZNAMEK", lines.toArray(new String[0]));
+        lines.add("&a[OK]&7=dost. &c[LOCK]&7=zam. &6[WIN]&7=čas &4[EXP]&7=exp. &b[LOC]&7=lokace &d[NPC]&7=NPC &e[AS]&7=ArmorStand");
+        ChatUtil.sendBox(sender, "SEZNAM ZNÁMEK", lines.toArray(new String[0]));
     }
 
     // ======================================================
@@ -330,18 +345,100 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
         if (args.length < 2) { sender.sendMessage(ChatUtil.error("Pouziti: /turista info <hrac>")); return; }
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) { sender.sendMessage(ChatUtil.error("Hrac &e" + args[1] + " &cneni online.")); return; }
+
+        int total     = plugin.getConfigManager().getStamps().size();
+        int maxPoints = plugin.getConfigManager().getStamps().values().stream().mapToInt(StampData::getPoints).sum();
+
         plugin.getDatabaseManager().getUnlockedStamps(target.getUniqueId()).thenAccept(unlocked ->
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                int total  = plugin.getConfigManager().getStamps().size();
-                int pct    = total > 0 ? (unlocked.size() * 100) / total : 0;
-                int filled = (int) ((pct / 100.0) * 20);
-                String bar = "&a" + "█".repeat(filled) + "&8" + "█".repeat(20 - filled);
-                ChatUtil.sendBox(sender, "PROFIL: " + target.getName(),
-                        "&7Znamky:   &e" + unlocked.size() + " &8/ &e" + total + " &8(" + pct + "%)",
-                        "&7Progress: " + bar,
-                        "&7Chybi:    &e" + (total - unlocked.size()) + " &7znamek do dokonceni"
-                );
-            })
+            plugin.getDatabaseManager().getPlayerPoints(target.getUniqueId()).thenAccept(points ->
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    int pct    = total > 0 ? (unlocked.size() * 100) / total : 0;
+                    int ptsPct = maxPoints > 0 ? (points * 100) / maxPoints : 0;
+                    int filled = (int) ((pct / 100.0) * 20);
+                    String bar = "&a" + "█".repeat(filled) + "&8" + "█".repeat(20 - filled);
+                    ChatUtil.sendBox(sender, "PROFIL: " + target.getName(),
+                            "&7Známky:   &e" + unlocked.size() + " &8/ &e" + total + " &8(" + pct + "%)",
+                            "&7Body:     &a" + points + "b &8/ &e" + maxPoints + "b &8(" + ptsPct + "%)",
+                            "&7Progress: " + bar,
+                            "&7Chybí:    &e" + (total - unlocked.size()) + " &7známek do dokončení"
+                    );
+                })
+            )
+        );
+    }
+
+    // ======================================================
+    //  /turista setup <stamp_id> [radius]  – Admin mega-příkaz (v2.4)
+    //
+    //  Jednařádkový setup: nastaví lokaci + spawne marker + uloží do DB.
+    //  Zobrozí kompaktní souhrnnou zprávu s návody jak pokračovat.
+    // ======================================================
+
+    private void handleSetup(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(plugin.getMessageManager().getMessage("player_only")); return;
+        }
+        if (args.length < 2) {
+            // Není zadáno ID – zobraž nápovědu
+            ChatUtil.sendBox(sender, "SETUP ZNAMKY – NÁVODY",
+                    "&e/turista setup <id> [radius]     &7» Nastavit známku na tvé místo",
+                    "",
+                    "&7Příklad:",
+                    "  &e/turista setup hrad_blanik 8",
+                    "  &7  → Nastaví hrad_blanik na tvoü pozici, radius 8m",
+                    "",
+                    "&7Musíš mít známku definovanou v &econfig.yml&7!",
+                    "&7Použij &e/turista list &7pro seznam známek."
+            );
+            return;
+        }
+
+        String stampId = args[1];
+        StampData stamp = plugin.getConfigManager().getStamp(stampId);
+        if (stamp == null) {
+            sender.sendMessage(ChatUtil.error("Známka &e" + stampId + " &cneexistuje v config.yml."));
+            sender.sendMessage(ChatUtil.info("Dostupné známky: &e/turista list"));
+            return;
+        }
+
+        double radius = 8.0;  // Default radius 8m (vhodnější pro většinu lokáčních míst)
+        if (args.length >= 3) {
+            try {
+                radius = Double.parseDouble(args[2]);
+                if (radius < 1.0 || radius > 200.0) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatUtil.error("Radius musí být číslo 1–200."));
+                return;
+            }
+        }
+
+        Player admin = (Player) sender;
+
+        // 1️⃣ Nastav lokaci
+        plugin.getLocationManager().saveLocation(stampId, admin.getLocation(), radius);
+
+        // 2️⃣ Spawne ArmorStand průvodce
+        boolean markerOk = plugin.getMarkerManager().spawnMarker(stampId, admin.getLocation());
+
+        // 3️⃣ Zobraž souhrnnou zprávu
+        String rarityColor = stamp.getRarity().color;
+        String rarityName  = stamp.getRarity().displayName;
+        ChatUtil.sendBox(sender, "✨ ZNÁMKA NASTAVENA!",
+                "&7ID:       &e" + stampId,
+                "&7Vzacnost: " + rarityColor + rarityName + " &8(&e" + stamp.getPoints() + "b&8)",
+                "&7Svet:     &e" + admin.getWorld().getName(),
+                "&7Pozice:   &e" + (int)admin.getX() + " " + (int)admin.getY() + " " + (int)admin.getZ(),
+                "&7Radius:   &e" + radius + "m",
+                "",
+                markerOk ? "&a✔ ArmorStand Průvodce spawnut " + rarityColor + "[" + rarityName + "]" :
+                            "&c✘ Marker se nepodarilo spawnut (zkus znovu)",
+                "",
+                "&e➤ Co dal?",
+                "&7• Hrac vejde do &e" + radius + "m &7okruhu = získá známku automaticky",
+                "&7• Hrac klikne na ArmorStand průvodce = získá známku",
+                "&7• Chceš NPC (Villager)? &e/turista npc spawn &7" + stampId,
+                "&7• Dat hracči rŭně:   &e/turista give <hrac> &7" + stampId,
+                "&7• Teleport na místo: &e/turista tp &7" + stampId
         );
     }
 
@@ -468,33 +565,36 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
     // ======================================================
 
     private void sendHelp(CommandSender sender) {
-        ChatUtil.sendBox(sender, "BasicLandTuristika v2.2 – Napoveda",
-                "&e/turista give <hrac> <id>         &7» Udeli znamku",
-                "&e/turista top                       &7» TOP 10 hracu s %",
-                "&e/turista list                      &7» Vsechny znamky + stavy",
-                "&e/turista info <hrac>               &7» Progres hrace",
-                "&e/turista setlocation <id> [r]     &7» Lokace + auto-spawn Markeru",
-                "&e/turista removelocation <id>       &7» Odeber lokaci + Marker",
-                "&e/turista locations                 &7» Seznam lokaci",
-                "&e/turista tp <id>                   &7» Admin TP na lokaci",
-                "&6&l--- ArmorStand Průvodce ---",
-                "&e/turista marker spawn <id>         &7» (Re)spawn průvodce",
-                "&e/turista marker remove <id>        &7» Odstran průvodce",
-                "&e/turista marker list               &7» Vsechni průvodci",
-                "&6&l--- Fyzická Nástěnka ---",
-                "&e/turista board spawn [id]          &7» Spawn nástěnky na pozici",
-                "&e/turista board remove <id>         &7» Odstran nástěnku",
-                "&e/turista board list                &7» Vsechny nástěnky",
-                "&e/turista board refresh             &7» Manuální refresh",
+        ChatUtil.sendBox(sender, "BasicLandTuristika v2.4 \u2013 N\u00e1pov\u011bda",
+                "&6&l--- Rychl\u00fd Setup ---",
+                "&e/turista setup <id> [r]         &7\u00bb \u2728 Mega-p\u0159\u00edkaz: lokace + marker najednou",
+                "",
+                "&e&l--- Z\u00e1kladn\u00ed p\u0159\u00edkazy ---",
+                "&e/turista give <hrac> <id>         &7\u00bb Ud\u011bl\u00ed zn\u00e1mku hr\u00e1\u010di",
+                "&e/turista top                       &7\u00bb Bodov\u00fd \u017eeb\u0159\u00ed\u010dek TOP 10",
+                "&e/turista list                      &7\u00bb Zn\u00e1mky + rarity + stav",
+                "&e/turista info <hrac>               &7\u00bb Progres + body hr\u00e1\u010de",
+                "&e/turista setlocation <id> [r]     &7\u00bb Lokace + auto-spawn Markeru",
+                "&e/turista removelocation <id>       &7\u00bb Odeber lokaci + Marker",
+                "&e/turista locations                 &7\u00bb Seznam lokac\u00ed",
+                "&e/turista tp <id>                   &7\u00bb Admin TP na lokaci",
+                "&6&l--- ArmorStand Pr\u016fvodce [rarity glow] ---",
+                "&e/turista marker spawn <id>         &7\u00bb (Re)spawn pr\u016fvodce s rarity barvou",
+                "&e/turista marker remove <id>        &7\u00bb Odstran pr\u016fvodce",
+                "&e/turista marker list               &7\u00bb V\u0161ichni pr\u016fvodci",
+                "&6&l--- Fyzick\u00e1 N\u00e1st\u011bnka ---",
+                "&e/turista board spawn [id]          &7\u00bb Spawn n\u00e1st\u011bnky na pozici",
+                "&e/turista board remove <id>         &7\u00bb Odstran n\u00e1st\u011bnku",
+                "&e/turista board refresh             &7\u00bb Manu\u00e1ln\u00ed refresh",
                 "&b&l--- Villager NPC ---",
-                "&e/turista npc spawn <id>            &7» Spawne Villager (s AI)",
-                "&e/turista npc remove <id>           &7» Odstran NPC",
-                "&e/turista npc list                  &7» Vsechna NPC",
-                "&b&l--- Ostatni ---",
-                "&e/turista hologram spawn/remove     &7» Floating hologram",
-                "&e/turista reload                    &7» Reload konfigurace"
+                "&e/turista npc spawn <id>            &7\u00bb Spawne Villager (s AI)",
+                "&e/turista npc remove <id>           &7\u00bb Odstran NPC",
+                "&b&l--- Ostatn\u00ed ---",
+                "&e/turista hologram spawn/remove     &7\u00bb Floating hologram",
+                "&e/turista reload                    &7\u00bb Reload konfigurace"
         );
     }
+
 
     // ======================================================
     //  TAB COMPLETER
@@ -504,7 +604,7 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (!sender.hasPermission("turista.admin")) return Collections.emptyList();
 
-        List<String> sub = Arrays.asList("give","top","list","info","setlocation","removelocation",
+        List<String> sub = Arrays.asList("give","top","list","info","setup","setlocation","removelocation",
                 "locations","hologram","reload","npc","marker","board","tp");
 
         if (args.length == 1) return sub.stream().filter(s -> s.startsWith(args[0].toLowerCase())).collect(Collectors.toList());
@@ -514,7 +614,7 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
                 case "give": case "info":
                     return Bukkit.getOnlinePlayers().stream().map(Player::getName)
                             .filter(n -> n.toLowerCase().startsWith(args[1].toLowerCase())).collect(Collectors.toList());
-                case "setlocation": case "tp":
+                case "setlocation": case "setup": case "tp":
                     return plugin.getConfigManager().getStamps().keySet().stream()
                             .filter(id -> id.startsWith(args[1].toLowerCase())).collect(Collectors.toList());
                 case "removelocation":

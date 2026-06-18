@@ -322,12 +322,19 @@ public class AirdropManager implements Listener {
 
             StampData stamp = plugin.getConfigManager().getStamp(stampId);
             String stampName = stamp != null ? stamp.getName() : stampId;
+            int points = stamp != null ? stamp.getPoints() : 1;
+            cz.basicland.turistika.config.ConfigManager.Rarity rarity =
+                    stamp != null ? stamp.getRarity() : cz.basicland.turistika.config.ConfigManager.Rarity.COMMON;
 
-            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() -> {
+            plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId, points).thenRun(() -> {
                 Bukkit.getScheduler().runTask(plugin, () -> {
+                    // Rarity zpráva
                     player.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                             .replace("{stamp_name}", stampName));
-                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
+                    player.sendMessage(cz.basicland.turistika.config.MessageManager.colorize(
+                            rarity.color + "[" + rarity.displayName + "] &7Získal jsi &e+" + points + " bodů!"));
+                    // Rarity zvuk
+                    player.playSound(player.getLocation(), rarity.collectSound, 1f, rarity.collectPitch);
                     player.spawnParticle(Particle.TOTEM, player.getLocation().add(0,1,0), 50, 0.5, 0.5, 0.5, 0.1);
 
                     int remaining = slots - 1;
