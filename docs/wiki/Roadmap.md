@@ -1,4 +1,4 @@
-# 🗺️ Roadmap – Plánované Fáze
+﻿# 🗺️ Roadmap – Plánované Fáze
 
 Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 
@@ -10,16 +10,16 @@ Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 - [x] Maven projekt, Paper API 1.20+, plugin.yml
 - [x] SQLite databáze – jednovláknový executor, WAL mode, PRAGMA optimalizace
 - [x] Vlastní GUI API (bez externích závislostí, InventoryHolder pattern)
-- [x] `/denik` GUI s stránkováním (45 zna mek na stránku)
+- [x] `/denik` GUI s stránkováním (45 známek na stránku)
 - [x] `/turista give <hráč> <id>` pro administrátory
 - [x] `config.yml` a `messages.yml` s plnou lokalizací
 
 ### Fáze 2 – Časové Zámky a Milníky
 - [x] `unlock_date` systém s Java Time API (thread-safe `DateTimeFormatter`)
-- [x] Vizuální odlišení zamčených / neobjevených / nalezených zna mek v GUI
-- [x] Milníkový systém – konzolové příkazy při N zna mkách
+- [x] Vizuální odlišení zamčených / neobjevených / nalezených známek v GUI
+- [x] Milníkový systém – konzolové příkazy při N známkách
 - [x] Server-First systém – 3 výhercovská místa, trvalé uložení v SQLite
-- [x] Broadcast při prvním objeření každé zna mky na serveru
+- [x] Broadcast při prvním objeření každé známky na serveru
 
 ### Fáze 3 – Airdropy a Limitované Edice
 - [x] `BukkitRunnable` plánovač s minutovou kontrolou
@@ -37,7 +37,7 @@ Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 - [x] Automatická obnova hologramů po restartu serveru
 - [x] Periodická aktualizace obsahu každé 2 minuty
 - [x] `/turista top` – stylizovaný žebříček v chatu
-- [x] `/turista list` – přehled zna mek s indikátory
+- [x] `/turista list` – přehled známek s indikátory
 - [x] `/turista info <hráč>` – progres s vizuálním progress barem
 - [x] `/turista reload` – hot reload konfigurace
 - [x] `TabCompleter` pro všechny sub-příkazy
@@ -51,7 +51,7 @@ Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 - [x] `/turista removelocation <id>` – odeber lokaci
 - [x] `/turista locations` – přehled všech lokací se souřadnicemi
 - [x] Automatický zápis souřadnic do config.yml přes příkaz
-- [x] Particle efekty při získání zna mky na lokaci (FIREWORK + HAPPY_VILLAGER)
+- [x] Particle efekty při získání známky na lokaci (FIREWORK + HAPPY_VILLAGER)
 
 ---
 
@@ -67,11 +67,11 @@ Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 
 ### Fáze 6 – PlaceholderAPI Integrace
 - [ ] Registrace pluginu jako PAPI expanzionů
-- [ ] `%turistika_stamps%` – počet nasbíraných zna mek
-- [ ] `%turistika_total%` – celkový počet zna mek v eventu
+- [ ] `%turistika_stamps%` – počet nasbíraných známek
+- [ ] `%turistika_total%` – celkový počet známek v eventu
 - [ ] `%turistika_rank%` – pořadí v globálním žebříčku
 - [ ] `%turistika_completion%` – procento dokončení (0–100)
-- [ ] `%turistika_next_milestone%` – do dalšího milníku zbývá N zna mek
+- [ ] `%turistika_next_milestone%` – do dalšího milníku zbývá N známek
 - [ ] Podpora v TAB, FeatherBoard, EssentialsX chat
 
 ### Fáze 7 – Rozšířené Admin Nástroje
@@ -84,9 +84,9 @@ Přehled aktuálního stavu a budoucích plánů pro BasicLand Turistika.
 ### Fáze 8 – Vizuální & Zvukový Upgrade
 - [ ] Animované hologramy (střídání řádků, blikání textu)
 - [ ] BossBar progress při aktuálně probíhajícím airdrops
-- [ ] Konfigurovatelné particle efekty pro každou zna mku zvlášť
-- [ ] Zvukový profil pro každou zna mku (custom sounds z resource packu)
-- [ ] Cinematic kamera efekt při získání zna mky (sekvence titulků)
+- [ ] Konfigurovatelné particle efekty pro každou známku zvlášť
+- [ ] Zvukový profil pro každou známku (custom sounds z resource packu)
+- [ ] Cinematic kamera efekt při získání známky (sekvence titulků)
 
 ---
 

@@ -1,4 +1,4 @@
-# 🔥 Jak Hráče Motivovat – Design Eventu
+﻿# 🔥 Jak Hráče Motivovat – Design Eventu
 
 Tato strana poskytuje herní designové tipy, jak udělat turistický event co nejzábavnější.
 
@@ -31,9 +31,9 @@ Turistický event funguje nejlépe, když kombinuje **3 pilíře zábavy**:
 
 ### Gradace obtížnosti
 ```
-Lehké (velký radius 10-20m)   → 50% zna mek → Pro všechny
-Střední (radius 5-8m)         → 35% zna mek → Pro zkušené
-Těžké (radius 2-3m)           → 15% zna mek → Pro hardcore
+Lehké (velký radius 10-20m)   → 50% známek → Pro všechny
+Střední (radius 5-8m)         → 35% známek → Pro zkušené
+Těžké (radius 2-3m)           → 15% známek → Pro hardcore
 ```
 
 ### Hint Systém (bez kódu, jen s designem)
@@ -50,7 +50,7 @@ Přidej na veřejný Discord kanál nebo /warp hints:
 | Mechanika | Popis |
 |---|---|
 | **TextDisplay Žebříček** | Živý leaderboard na spawnu |
-| **Server-First Broadcast** | Každá první zna mka je ohlášena |
+| **Server-First Broadcast** | Každá první známka je ohlášena |
 | **Grand Finale** | Dramatická odměna pro 1./2./3. s dokončením |
 | **Streak Systém** | Denní race – kdo má nejdelší sérii |
 
@@ -70,13 +70,13 @@ Přidej na veřejný Discord kanál nebo /warp hints:
           🥇 1. MÍSTO (dokončení)
          /  Grand finale, exkluzivní rank, velké peníze
         /
-       🎯 MILNÍKY (5, 10, 15, 20 zna mek)
+       🎯 MILNÍKY (5, 10, 15, 20 známek)
       /  Postupné odměny, prefix, crate klíče
      /
     🔄 STREAK (každodenní login)
    /  Malé ale časté odměny, bonus XP
   /
- ⭐ PRVNÍ KROK (1. zna mka)
+ ⭐ PRVNÍ KROK (1. známka)
    Broadcast, title, malá odměna – první dojem je klíčový!
 ```
 
@@ -133,8 +133,8 @@ Ručně broadcastuj hodinu před airdropem:
 ## 6. Sociální Mechaniky
 
 ### Co Plugin Automaticky Dělá
-- Broadcast když někdo najde zna mku jako první na serveru
-- Broadcast milníků (5, 10, 20 zna mek)
+- Broadcast když někdo najde známku jako první na serveru
+- Broadcast milníků (5, 10, 20 známek)
 - Broadcast dokončení (Grand Finale)
 - ActionBar hint při přiblížení k lokaci
 
@@ -151,10 +151,10 @@ Ručně broadcastuj hodinu před airdropem:
 ## 7. Příkladový 30denní Event Plán
 
 ```
-Týden 1 (1.-7.7.):  Odemknutí 30% zna mek, Airdrop každý pátek
+Týden 1 (1.-7.7.):  Odemknutí 30% známek, Airdrop každý pátek
 Týden 2 (8.-14.7.): Odemknutí dalších 30%, Streak odměny startují
 Týden 3 (15.-21.7.): Odemknutí dalších 30%, Grand Airdrop (max_pickups: 1)
-Týden 4 (22.-28.7.): Finální zna mka, Race o Server-First dokončení
+Týden 4 (22.-28.7.): Finální známka, Race o Server-First dokončení
 Den 28 (28.7.):     Slavnostní Grand Finale, vyhlášení výherců
 ```
 
@@ -169,7 +169,7 @@ Den 28 (28.7.):     Slavnostní Grand Finale, vyhlášení výherců
 |---|---|---|
 | **Hinty za body** | Hráč utratí herní měnu za souřadnicový hint | Fáze 5 |
 | **Album Foto** | Hráč pořídí "screenshot" (book & quill) na lokaci | Fáze 5 |
-| **Týmový mód** | Hráči sbírají zna mky do sdíleného týmového deníku | Budoucnost |
-| **Sezónní Deníky** | Léto/Podzim/Zima/Jaro – každá sezóna jiné zna mky | Budoucnost |
+| **Týmový mód** | Hráči sbírají známky do sdíleného týmového deníku | Budoucnost |
+| **Sezónní Deníky** | Léto/Podzim/Zima/Jaro – každá sezóna jiné známky | Budoucnost |
 | **PlaceholderAPI** | `%turistika_streak%` v TAB, scoreboard | Fáze 6 |
 | **Boss Bar Odpočet** | Countdown do dalšího airdrops na obrazovce | Fáze 8 |

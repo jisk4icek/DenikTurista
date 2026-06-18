@@ -1,4 +1,4 @@
-# 🗺️ Jak To Funguje – Přehled Celého Systému
+﻿# 🗺️ Jak To Funguje – Přehled Celého Systému
 
 Tato strana vysvětluje kompletní herní logiku pluginu od instalace po finální odměnu.
 
@@ -11,9 +11,9 @@ Tato strana vysvětluje kompletní herní logiku pluginu od instalace po fináln
       │              TURISTICKÝ DENÍK 2026              │
       │                                                  │
       │  Hráč prozkoumává mapu BasicLandu a sbírá        │
-      │  turistické zna mky na reálných herních místech. │
+      │  turistické známky na reálných herních místech. │
       │                                                  │
-      │  Existují 3 způsoby jak získat zna mku:          │
+      │  Existují 3 způsoby jak získat známku:          │
       │   1. Navštívit fyzickou lokaci ve světě          │
       │   2. Sebrat limitovaný airdrop z nebe             │
       │   3. Admin zadá /turista give (pro NPC, questy)  │
@@ -24,7 +24,7 @@ Tato strana vysvětluje kompletní herní logiku pluginu od instalace po fináln
 
 ## Způsob 1 – Fyzická Lokace (Proximity)
 
-Toto je primární způsob sbírání běžných zna mek.
+Toto je primární způsob sbírání běžných známek.
 
 ```
 Admin nastaví souřadnice v config.yml nebo přes /turista setlocation
@@ -36,9 +36,9 @@ LocationManager každé 2s kontroluje online hráče
           │
           └─── Hráč vstoupí do radius →
                     │
-                    ├── Má zna mku? → nic
+                    ├── Má známku? → nic
                     │
-                    └── Nemá zna mku? →
+                    └── Nemá známku? →
                               ├── Zapíše do SQLite (async)
                               ├── Pošle hráči zprávu
                               ├── Přehraje zvuk + particles
@@ -81,7 +81,7 @@ world.dropItem() spawnuje fyzický item na souřadnicích
                     ├── Zbývají pickup sloty? (max_pickups)
                     │    ├── NE → hráč dostane zprávu
                     │    └── ANO →
-                    │              ├── Zapíše zna mku do SQLite
+                    │              ├── Zapíše známku do SQLite
                     │              ├── Sníží slot counter v PDC
                     │              ├── Particles + zvuk z hráče
                     │              └── Zkontroluje milníky
@@ -97,7 +97,7 @@ world.dropItem() spawnuje fyzický item na souřadnicích
 ## Způsob 3 – Ruční Udělení Adminem
 
 ```
-/turista give <hráč> <id_zna mky>
+/turista give <hráč> <id_známky>
           │
           ├── hasStamp() async check →
           │    └── Má? → Chyba adminovi
@@ -128,14 +128,14 @@ Po načtení → openInventory() na hlavním vlákně
 DenikGUI renderuje 54-slotový inventář:
 
   ┌──────────────────────────────────────────┐
-  │ [✦] [✦] [✦] [?] [?] [⏳] [?] [?] [?]  │ ← strana 1 (max 45 zna mek)
+  │ [✦] [✦] [✦] [?] [?] [⏳] [?] [?] [?]  │ ← strana 1 (max 45 známek)
   │ [?] [?] [?] [?] [?] [?] [?] [?] [?]   │
   │ ...                                      │
   │ [←] [ ] [ ] [ ] [ ] [ ] [ ] [ ] [→]    │ ← strankovací řádek
   └──────────────────────────────────────────┘
 
-  [✦] = nalezená zna mka (originální vizuál + lore)
-  [?] = nenalezená (MAP item + "Neobjevená Zna mka")
+  [✦] = nalezená známka (originální vizuál + lore)
+  [?] = nenalezená (MAP item + "Neobjevená známka")
   [⏳] = časově zamčená (CLOCK item + datum odemčení)
 ```
 
@@ -149,7 +149,7 @@ DenikGUI renderuje 54-slotový inventář:
 ## Milníky a Server-First
 
 ```
-Po každém přidání zna mky se volá:
+Po každém přidání známky se volá:
           │
 MilestoneManager.checkMilestones(player, totalCount)
           │
@@ -197,8 +197,8 @@ Po restartu serveru:
 
 | Tabulka | Obsah |
 |---|---|
-| `unlocked_stamps` | (uuid, stamp_id) – kdo má jakou zna mku |
-| `server_firsts` | (stamp_id, uuid, player_name) – kdo první objevil zna mku |
+| `unlocked_stamps` | (uuid, stamp_id) – kdo má jakou známku |
+| `server_firsts` | (stamp_id, uuid, player_name) – kdo první objevil známku |
 | `master_firsts` | (rank, uuid, player_name) – kdo 1./2./3. dokončil celý deník |
 | `holograms` | (id, world, x, y, z, entity_uuid) – uložené hologramy |
 

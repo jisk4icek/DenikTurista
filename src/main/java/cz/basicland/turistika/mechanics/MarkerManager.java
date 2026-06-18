@@ -33,7 +33,7 @@ import java.util.*;
  *  - Vedlejší ruka: STICK (turistická hůl)
  *  - Poza: vítající průvodce, ruka s mapou natažená k hráči
  *
- * Interakce: hráč klikne pravý → dostane turistickou zna mku
+ * Interakce: hráč klikne pravý → dostane turistickou známku
  * Persistence: ArmorStand je Persistent=true, pozice v SQLite
  */
 public class MarkerManager implements Listener {
@@ -123,7 +123,7 @@ public class MarkerManager implements Listener {
 
         activeMarkers.put(stampId, as.getUniqueId());
         plugin.getDatabaseManager().saveMarker(stampId, loc, as.getUniqueId());
-        plugin.getLogger().info("Marker (turistický průvodce) pro zna mku '" + stampId + "' spawnut.");
+        plugin.getLogger().info("Marker (turistický průvodce) pro známku '" + stampId + "' spawnut.");
         return true;
     }
 

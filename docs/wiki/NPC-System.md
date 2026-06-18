@@ -1,6 +1,6 @@
-# 🪪 NPC Systém – Turistické Postavy (v2.0)
+﻿# 🪪 NPC Systém – Turistické Postavy (v2.0)
 
-Turistické NPC jsou **Villager postavy** spawnuté pluginem, které rozdávají zna mky při kliknutí. Žádný plugin třetí strany není potřeba – vše funguje nativně.
+Turistické NPC jsou **Villager postavy** spawnuté pluginem, které rozdávají známky při kliknutí. Žádný plugin třetí strany není potřeba – vše funguje nativně.
 
 ---
 
@@ -12,7 +12,7 @@ Admin zadá: /turista npc spawn hrad_karlstejn
          └── Spawne Villager entitu na admině pozici
                │
                ├── Entita je označena PDC tagem (turistika:npc_stamp_id)
-               ├── Má jméno: "✦ {název zna mky} ✦ [Klikni pro získání]"
+               ├── Má jméno: "✦ {název známky} ✦ [Klikni pro získání]"
                ├── AI = false (nestěhuje se)
                ├── Invulnerable = true (nelze zabít)
                └── UUID + pozice uloženy v SQLite
@@ -20,9 +20,9 @@ Admin zadá: /turista npc spawn hrad_karlstejn
 Hráč klikne pravým tlačítkem na NPC
          │
          ├── Plugin zkontroluje PDC tag
-         ├── Zkontroluje dostupnost zna mky (časové okno, expiraci)
-         ├── Zkontroluje zda hráč nemá zna mku již
-         └── Udělí zna mku + particles + zvuk + streak + milestone
+         ├── Zkontroluje dostupnost známky (časové okno, expiraci)
+         ├── Zkontroluje zda hráč nemá známku již
+         └── Udělí známku + particles + zvuk + streak + milestone
 ```
 
 ---
@@ -70,5 +70,5 @@ Oba systémy lze kombinovat na té samé zna mce:
 ## Omezení
 
 - NPC jsou **Villager** entity – nelze změnit skin bez Citizens pluginu
-- Jedna zna mka = jedno NPC (nelze mít více NPC pro tu samou zna mku)
+- Jedna známka = jedno NPC (nelze mít více NPC pro tu samou známku)
 - NPC nedetekuje Residence ochranu – kliknutí funguje všude

@@ -1,4 +1,4 @@
-# ================================================================
+﻿# ================================================================
 # |  BasicLand Turistika v2.0 – config.yml                       |
 # |  Paper 1.20+ | SQLite | Zero Dependencies                     |
 # ================================================================
@@ -11,9 +11,9 @@
 # ─────────────────────────────────────────────────────────────
 stamps:
   hrad_karlstejn:
-    name: "&6✦ Turistická Zna mka: Hrad Karlštejn ✦"
+    name: "&6✦ Turistická známka: Hrad Karlštejn ✦"
     lore:
-      - "&7Tato slavnostní zna mka potvrzuje"
+      - "&7Tato slavnostní známka potvrzuje"
       - "&7tvou návštěvu malebného hradu Karlštejn."
       - ""
       - "&8Sbírka: &e2026 Letní Tour"
@@ -28,7 +28,7 @@ stamps:
     #   radius: 8.0
 
   letni_festival:
-    name: "&b✦ Turistická Zna mka: Letní Festival 2026 ✦"
+    name: "&b✦ Turistická známka: Letní Festival 2026 ✦"
     lore:
       - "&7Exkluzivní vzpomínka na famózní"
       - "&7Letní Festival 2026 na BasicLandu!"
@@ -40,9 +40,9 @@ stamps:
     expire_date: "2026-08-31 23:59:59"
 
   vecer_znamka:
-    name: "&9✦ Večerní Zna mka: Západ Slunce ✦"
+    name: "&9✦ Večerní známka: Západ Slunce ✦"
     lore:
-      - "&7Vzácná zna mka dostupná jen za soumraku."
+      - "&7Vzácná známka dostupná jen za soumraku."
       - "&7Navštiv toto místo v podvečer!"
       - ""
       - "&8Dostupná: &718:00 – 22:00"
@@ -122,9 +122,9 @@ gui:
   title: "&8✦ &bTuristický Deník &8✦"
   unknown_stamp:
     material: MAP
-    name: "&c&l? Neobjevená Zna mka ?"
+    name: "&c&l? Neobjevená známka ?"
     lore:
-      - "&7Tuto turistickou zna mku jsi ještě"
+      - "&7Tuto turistickou známku jsi ještě"
       - "&7neobjevil. Prozkoumávej mapu BasicLandu!"
       - ""
       - "&8&oHint: Hledej ji v herním světě..."
@@ -132,7 +132,7 @@ gui:
     material: CLOCK
     name: "&8&l⏳ Uzamčená Edice"
     lore:
-      - "&7Zna mka &e{name} &7ještě nebyla odhalena."
+      - "&7známka &e{name} &7ještě nebyla odhalena."
       - ""
       - "&7Odemkne se: &e{unlock_date}"
 
@@ -144,25 +144,25 @@ gui:
 #   "eco give %player% 1000"                     → EssentialsX peníze
 #   "lp user %player% parent add vip"            → LuckPerms rank
 #   "lp user %player% meta setprefix 100 [T]"    → Prefix
-#   "broadcast &e%player% &7má N zna mek!"       → Chat zpráva
+#   "broadcast &e%player% &7má N známek!"       → Chat zpráva
 #   "title %player% &6Text!|&7Podnadpis"         → Title na obrazovce
 #   "crates key give %player% klic 1"            → Crate klíč
 # ─────────────────────────────────────────────────────────────
 milestones:
   1:
     commands:
-      - "broadcast &7[&bTuristika&7] &e%player% &7získal svou první turistickou zna mku! 🗺️"
+      - "broadcast &7[&bTuristika&7] &e%player% &7získal svou první turistickou známku! 🗺️"
   5:
     commands:
       - "give %player% diamond 3"
-      - "title %player% &e⭐ 5 Zna mek!|&7Průzkumník se probouzí..."
-      - "broadcast &7[&bTuristika&7] &e%player% &7má &65 &7zna mek!"
+      - "title %player% &e⭐ 5 známek!|&7Průzkumník se probouzí..."
+      - "broadcast &7[&bTuristika&7] &e%player% &7má &65 &7známek!"
   10:
     commands:
       - "give %player% diamond 10"
       - "lp user %player% meta setprefix 100 [&6Turista&r]"
       - "eco give %player% 2000"
-      - "title %player% &6✦ Zlatý Turista ✦|&710 zna mek – Zlatý milník!"
+      - "title %player% &6✦ Zlatý Turista ✦|&710 známek – Zlatý milník!"
       - "broadcast &6[Turistika] &6%player% &7dosáhl &6ZLATÉHO milníku!"
 
 # ─────────────────────────────────────────────────────────────

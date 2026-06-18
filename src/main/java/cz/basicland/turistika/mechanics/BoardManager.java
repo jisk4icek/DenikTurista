@@ -32,7 +32,7 @@ import java.util.*;
  *  │ 🥈 Hráč2           8 ✦  80% │
  *  │ 🥉 Hráč3           6 ✦  60% │
  *  │ ━━━━━━━━━━━━━━━━━━━━━━━━━   │
- *  │ 📊 Celkem zna mek: 12        │  ← statistiky
+ *  │ 📊 Celkem známek: 12        │  ← statistiky
  *  │ 🔥 Aktivní hráči: 47         │
  *  └─────────────────────────────┘
  *
@@ -246,13 +246,13 @@ public class BoardManager {
 
         // ─── STATISTIKY ─────────────────────────────────────────────────
         sb.append(MessageManager.colorize("&b&l STATISTIKY:")).append("\n");
-        sb.append(MessageManager.colorize("  &7Zna mek v eventu: &e" + totalStamps)).append("\n");
+        sb.append(MessageManager.colorize("  &7známek v eventu: &e" + totalStamps)).append("\n");
         sb.append(MessageManager.colorize("  &7Online hráčů:     &a" + onlineCount)).append("\n");
 
         // Celkový globální progres (průměr)
         if (!top.isEmpty()) {
             int totalCollected = top.stream().mapToInt(Map.Entry::getValue).sum();
-            sb.append(MessageManager.colorize("  &7Top 3 sesbírali: &e" + totalCollected + " &7zna mek")).append("\n");
+            sb.append(MessageManager.colorize("  &7Top 3 sesbírali: &e" + totalCollected + " &7známek")).append("\n");
         }
 
         sb.append(MessageManager.colorize("&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━")).append("\n");

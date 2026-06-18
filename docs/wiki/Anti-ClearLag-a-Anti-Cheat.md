@@ -1,4 +1,4 @@
-# 🛡️ Anti-XRay, Anti-Cheat & Zabezpečení
+﻿# 🛡️ Anti-XRay, Anti-Cheat & Zabezpečení
 
 Kompletní průvodce zabezpečením turistického eventu na Production serveru.
 
@@ -48,7 +48,7 @@ anticheat:
       - deepslate_redstone_ore
       - ancient_debris
       # ↓ PŘIDEJ BLOKY, KTERÉ POUŽÍVÁŠ JAKO "HINT" KE ZNAMKÁM
-      # Například skrytá truhla nebo dekorace poblíž lokace zna mky
+      # Například skrytá truhla nebo dekorace poblíž lokace známky
       - mossy_cobblestone
       - chiseled_stone_bricks
       - cracked_stone_bricks
@@ -65,16 +65,16 @@ anticheat:
 
 ---
 
-## 2. Ochrana Lokací Zna mek – WorldGuard
+## 2. Ochrana Lokací známek – WorldGuard
 
 Instaluj **WorldGuard** pro ochranu oblastí, kde jsou turistické lokace.
 
-### Ochrana oblasti kolem zna mky
+### Ochrana oblasti kolem známky
 
 ```bash
 # 1. Označ oblast (WorldEdit wand)
 //wand
-# Označ rohy oblasti (kde je zna mka)
+# Označ rohy oblasti (kde je známka)
 
 # 2. Vytvoř region
 /region define znamka_karlstejn
@@ -107,7 +107,7 @@ Každý airdrop item obsahuje PDC tag:
 Namespace: turistika
 Key: airdrop_id
 Type: STRING
-Value: <id_zna mky>
+Value: <id_známky>
 ```
 
 ### Konfigurace pro různé Anti-Lag pluginy
@@ -151,7 +151,7 @@ item-cleanup:
 
 ---
 
-## 4. Anti-Cheat pro Sbírání Zna mek
+## 4. Anti-Cheat pro Sbírání známek
 
 ### Ochrana Proximity Systému
 
@@ -170,10 +170,10 @@ Jakýkoliv Anti-Cheat, který blokuje ilegální pohyb, **automaticky** chrání
 
 LocationManager má vestavěný throttling:
 - Kontrola každé **2 sekundy** (ne na každý tick)
-- Hint cooldown **30 sekund** per hráč per zna mka
-- Zna mka se přidá **jednou** (INSERT OR IGNORE v SQLite)
+- Hint cooldown **30 sekund** per hráč per známka
+- známka se přidá **jednou** (INSERT OR IGNORE v SQLite)
 
-Hráč tedy nemůže získat stejnou zna mku vícekrát ani rychlým pohybem.
+Hráč tedy nemůže získat stejnou známku vícekrát ani rychlým pohybem.
 
 ---
 

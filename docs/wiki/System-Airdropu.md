@@ -1,4 +1,4 @@
-# 🪂 Airdropy v2.0 – Náhodný Spawn v Regionu
+﻿# 🪂 Airdropy v2.0 – Náhodný Spawn v Regionu
 
 Airdropy v2.0 podporují **náhodný bezpečný spawn** v konfigurovatelné oblasti mapy, nejen pevné souřadnice.
 
@@ -66,7 +66,7 @@ protected_zones:
     max_z: -150
 ```
 
-Airdropy nespadnou do žádné definované Protected Zone. Totéž platí pro proximity systém – automatická zna mka se neudělí v Protected Zone.
+Airdropy nespadnou do žádné definované Protected Zone. Totéž platí pro proximity systém – automatická známka se neudělí v Protected Zone.
 
 ---
 

@@ -66,7 +66,7 @@ public class DenikGUI extends Gui {
         getInventory().setItem(44, new ItemBuilder(Material.BOOK)
                 .setName("&b&l✦ Tvůj Postup ✦")
                 .setLore(Arrays.asList(
-                        "&7Zna mky: &e" + found + " &8/ &e" + total + " &8(" + pct + "%)",
+                        "&7známky: &e" + found + " &8/ &e" + total + " &8(" + pct + "%)",
                         "&7Progress: " + progressBar,
                         "",
                         "&7Strana: &e" + (page + 1) + " &8/ &e" + maxPages,
@@ -124,7 +124,7 @@ public class DenikGUI extends Gui {
                 return new ItemBuilder(Material.BARRIER)
                         .setName("&4✖ Expirovaná Edice")
                         .setLore(Arrays.asList(
-                                "&7Tato zna mka již není dostupná.",
+                                "&7Tato známka již není dostupná.",
                                 "&7Datum platnosti: &c" + stamp.getExpireDate().format(ConfigManager.DISPLAY_FORMAT),
                                 "",
                                 "&8Tuto edici jsi nestihl/a."
@@ -136,7 +136,7 @@ public class DenikGUI extends Gui {
                 return new ItemBuilder(Material.COMPARATOR)
                         .setName("&6⏰ Mimo Čas")
                         .setLore(Arrays.asList(
-                                "&7Zna mka &e" + stripColor(stamp.getName()),
+                                "&7známka &e" + stripColor(stamp.getName()),
                                 "&7je dostupná jen v čas:",
                                 "&e" + stamp.getWindowString(),
                                 "",

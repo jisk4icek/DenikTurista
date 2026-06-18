@@ -1,12 +1,12 @@
-# 📍 Nastavení Fyzických Lokací Znamek
+﻿# 📍 Nastavení Fyzických Lokací Znamek
 
-Lokace jsou místa ve světě, kde hráč musí fyzicky navštívit, aby získal turistickou zna mku.
+Lokace jsou místa ve světě, kde hráč musí fyzicky navštívit, aby získal turistickou známku.
 
 ---
 
 ## Jak to funguje
 
-Plugin každé **2 sekundy** kontroluje, zda se nějaký online hráč nenachází v nastaveném okruhu (radius) kolem lokace zna mky. Pokud ano a hráč zna mku ještě nemá, automaticky ji dostane.
+Plugin každé **2 sekundy** kontroluje, zda se nějaký online hráč nenachází v nastaveném okruhu (radius) kolem lokace známky. Pokud ano a hráč známku ještě nemá, automaticky ji dostane.
 
 Navíc, pokud je hráč v **3× radius** (blízkosti), zobrazí se mu v ActionBaru hint se vzdáleností.
 
@@ -61,14 +61,14 @@ Po editaci zavolej `/turista reload`.
 
 ---
 
-## Metoda 3 – Zna mka bez Lokace (Admin-only nebo Airdrop)
+## Metoda 3 – známka bez Lokace (Admin-only nebo Airdrop)
 
-Pokud zna mka nemá nastavenou sekci `location`, hráč ji nemůže najít procházením světa. Dostane ji pouze:
+Pokud známka nemá nastavenou sekci `location`, hráč ji nemůže najít procházením světa. Dostane ji pouze:
 - Přes příkaz `/turista give`
 - Sebrání airdrops
 - Voláním příkazu z NPC, CommandBlocku, quest pluginu
 
-Takové zna mky označí `/turista list` jako `[---]`.
+Takové známky označí `/turista list` jako `[---]`.
 
 ---
 
@@ -77,9 +77,9 @@ Takové zna mky označí `/turista list` jako `[---]`.
 | Příkaz | Popis |
 |---|---|
 | `/turista setlocation <id> [r]` | Nastaví lokaci na tvé aktuální pozici |
-| `/turista removelocation <id>` | Odstraní lokaci ze zna mky |
+| `/turista removelocation <id>` | Odstraní lokaci ze známky |
 | `/turista locations` | Vypíše všechny nastavené lokace se souřadnicemi |
-| `/turista list` | Přehled všech zna mek + zda mají lokaci |
+| `/turista list` | Přehled všech známek + zda mají lokaci |
 
 ---
 
@@ -102,10 +102,10 @@ Takové zna mky označí `/turista list` jako `[---]`.
 
 Když je hráč v **3× radius** (ale ne ještě uvnitř), zobrazí se mu:
 ```
-✦ Jsi blízko turistické zna mky ✦ Hrad Karlštejn ✦ (12m) ✦
+✦ Jsi blízko turistické známky ✦ Hrad Karlštejn ✦ (12m) ✦
 ```
 
-Hint se zobrazuje **maximálně jednou za 30 sekund** na každou zna mku, aby neobtěžoval.
+Hint se zobrazuje **maximálně jednou za 30 sekund** na každou známku, aby neobtěžoval.
 
 Hráč tak cítí, že se blíží k cíli, aniž by ho plugin přesně naváděl šipkami – zachovává prvek průzkumu.
 
@@ -117,7 +117,7 @@ Pro prémiový zážitek:
 1. Vytvoř vlastní 3D model turistické tabule (resource pack, `custom_model_data`)
 2. Umísti v herním světě blok s tímto modelem (např. přes dekorace)
 3. Nastav lokaci na souřadnice tohoto "sloupu"
-4. Hráč fyzicky přijde k tabuli a zna mka se zaeviduje
+4. Hráč fyzicky přijde k tabuli a známka se zaeviduje
 
 ---
 
@@ -129,4 +129,4 @@ Pokud máš na serveru plugin **Citizens**, nastav NPC command:
 /npc command add -p /turista give <player> id_znamky
 ```
 
-Tím hráč dostane zna mku kliknutím na NPC. Lokaci pak nemusíš nastavovat – NPC je "lokace" sám o sobě.
+Tím hráč dostane známku kliknutím na NPC. Lokaci pak nemusíš nastavovat – NPC je "lokace" sám o sobě.

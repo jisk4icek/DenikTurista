@@ -15,13 +15,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Streak systém – sleduje po sobě jdoucí dny, kdy hráč přidal alespoň 1 zna mku.
+ * Streak systém – sleduje po sobě jdoucí dny, kdy hráč přidal alespoň 1 známku.
  *
  * Data se ukládají do SQLite (tabulka player_streaks).
  * Každý den odměna za streak je konfigurovatelná v config.yml.
  *
  * Logika:
- *  - Hráč sbírá zna mku → zavolá se recordActivity(player)
+ *  - Hráč sbírá známku → zavolá se recordActivity(player)
  *  - Systém zkontroluje, zda hráč byl aktivní VČERA
  *    → ANO: streak += 1, odměna dle config
  *    → NE a byl aktivní DNES: streak = stejný (nic se nemění)
@@ -42,7 +42,7 @@ public class StreakManager {
     }
 
     /**
-     * Zavolej po každém úspěšném získání zna mky.
+     * Zavolej po každém úspěšném získání známky.
      */
     public void recordActivity(Player player) {
         UUID uuid = player.getUniqueId();
@@ -53,7 +53,7 @@ public class StreakManager {
             int newStreak;
 
             if (entry == null) {
-                // Vůbec první zna mka
+                // Vůbec první známka
                 newStreak = 1;
             } else if (today.equals(entry.lastDate)) {
                 // Dnes už byl aktivní – streak se nemění

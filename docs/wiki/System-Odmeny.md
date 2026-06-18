@@ -1,4 +1,4 @@
-# 🎁 Systém Odměn – Co Plugin Umí Dát a Jak
+﻿# 🎁 Systém Odměn – Co Plugin Umí Dát a Jak
 
 Tato strana popisuje **všechny typy odměn**, které plugin může automaticky udělovat, a **jak je konfigurovat** v `config.yml`.
 
@@ -28,8 +28,8 @@ Placeholder `%player%` se automaticky nahradí jménem hráče.
 
 | Trigger | Kde v config.yml | Popis |
 |---|---|---|
-| **N-tá zna mka** | `milestones.<N>.commands` | Hráč celkem nasbírá N zna mek |
-| **N dní v řadě** | `streak_rewards.<N>.commands` | Streak – každý den alespoň 1 zna mka |
+| **N-tá známka** | `milestones.<N>.commands` | Hráč celkem nasbírá N známek |
+| **N dní v řadě** | `streak_rewards.<N>.commands` | Streak – každý den alespoň 1 známka |
 | **1. na serveru** | `server_first_rewards.1.commands` | První hráč s kompletním deníkem |
 | **2. na serveru** | `server_first_rewards.2.commands` | Druhý hráč s kompletním deníkem |
 | **3. na serveru** | `server_first_rewards.3.commands` | Třetí hráč s kompletním deníkem |
@@ -74,7 +74,7 @@ commands:
 ```yaml
 commands:
   # Standardní broadcast (zelená zpráva)
-  - "broadcast &e%player% &7nasbíral 10 turistických zna mek!"
+  - "broadcast &e%player% &7nasbíral 10 turistických známek!"
 
   # Broadcast se stylem (plugin NATIVNĚ zpracuje "broadcast" klíčové slovo)
   - "broadcast &d&l★ TURISTA ★ &a%player% &ajako první dokončil deník!"
@@ -85,7 +85,7 @@ Plugin má vlastní zkrácený formát – nemusíš psát JSON:
 ```yaml
 commands:
   # Formát: title <nadpis>|<podnadpis>
-  - "title %player% &6Gratulace!|&7Dosáhl jsi 10 zna mek"
+  - "title %player% &6Gratulace!|&7Dosáhl jsi 10 známek"
   - "title %player% &d&lGRAND FINALE!|&aDokončil jsi jako PRVNÍ na serveru!"
 ```
 > Text před `|` = nadpis, text za `|` = podnadpis. Obě části podporují `&` barvy.
@@ -118,7 +118,7 @@ commands:
 ```
 
 ### 9. 🎭 Custom Efekty (Sound, Particle přes příkaz)
-Particle a sound efekty při získání zna mky jsou zabudované v pluginu. Pro extra efekty přes příkazy:
+Particle a sound efekty při získání známky jsou zabudované v pluginu. Pro extra efekty přes příkazy:
 ```yaml
 commands:
   - "particle minecraft:totem_of_undying ~ ~1 ~ 0.5 0.5 0.5 0.1 50 force %player%"
@@ -142,34 +142,34 @@ commands:
 milestones:
   1:
     commands:
-      - "broadcast &7[Turistika] &e%player% &7získal svou první turistickou zna mku! 🗺️"
+      - "broadcast &7[Turistika] &e%player% &7získal svou první turistickou známku! 🗺️"
   5:
     commands:
       - "give %player% diamond 3"
-      - "title %player% &e⭐ 5 Zna mek! ⭐|&7Průzkumník se probouzí..."
-      - "broadcast &7[Turistika] &e%player% &7nasbíral již &65 &7zna mek!"
+      - "title %player% &e⭐ 5 známek! ⭐|&7Průzkumník se probouzí..."
+      - "broadcast &7[Turistika] &e%player% &7nasbíral již &65 &7známek!"
   10:
     commands:
       - "give %player% diamond 10"
       - "lp user %player% meta setprefix 100 [&6Turista&r]"
       - "eco give %player% 2000"
-      - "title %player% &6✦ Zlatý Turista ✦|&710 zna mek – Zlatý milník!"
-      - "broadcast &6[Turistika] &6%player% &7dosáhl &6ZLATÉHO milníku – &e10 zna mek!"
+      - "title %player% &6✦ Zlatý Turista ✦|&710 známek – Zlatý milník!"
+      - "broadcast &6[Turistika] &6%player% &7dosáhl &6ZLATÉHO milníku – &e10 známek!"
   20:
     commands:
       - "give %player% netherite_ingot 1"
       - "lp user %player% parent add tourmaster"
       - "eco give %player% 10000"
       - "crates key give %player% touristicky 3"
-      - "broadcast &d&l[★ TURISTIKA ★] &d%player% &7dosáhl bájného &d20 zna mek!"
-      - "title %player% &d&l⚡ LEGENDA ⚡|&d20 zna mek – Jsi legenda BasicLandu!"
+      - "broadcast &d&l[★ TURISTIKA ★] &d%player% &7dosáhl bájného &d20 známek!"
+      - "title %player% &d&l⚡ LEGENDA ⚡|&d20 známek – Jsi legenda BasicLandu!"
 ```
 
 ---
 
 ## Streak Odměny – Po Sobě Jdoucí Dny
 
-Streak motivuje hráče, aby se přihlašovali každý den a sbírali alespoň 1 zna mku.
+Streak motivuje hráče, aby se přihlašovali každý den a sbírali alespoň 1 známku.
 
 ```yaml
 streak_rewards:

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *  /turista npc spawn <id>       – Spawne NPC na tvé pozici
  *  /turista npc remove <id>      – Odstraní NPC
  *  /turista npc list             – Vypíše všechna NPC
- *  /turista tp <stamp_id>        – Admin teleport na lokaci zna mky
+ *  /turista tp <stamp_id>        – Admin teleport na lokaci známky
  *  /turista list                 – Nyní ukazuje i [NPC] indikátor
  */
 public class TuristaCommand implements CommandExecutor, TabCompleter {
@@ -113,7 +113,7 @@ public class TuristaCommand implements CommandExecutor, TabCompleter {
                     }
                 }
                 lines.add("");
-                lines.add("&7Celkem zna mek v eventu: &e" + total);
+                lines.add("&7Celkem známek v eventu: &e" + total);
                 ChatUtil.sendBox(sender, "TOP TURISTÉ ✦", lines.toArray(new String[0]));
             })
         );

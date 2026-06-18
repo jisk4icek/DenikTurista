@@ -1,13 +1,13 @@
-# 🔥 Streak Systém – Každodenní Motivace
+﻿# 🔥 Streak Systém – Každodenní Motivace
 
-Streak systém odměňuje hráče, kteří se každý den vrátí a nasbírají alespoň 1 novou turistickou zna mku.
+Streak systém odměňuje hráče, kteří se každý den vrátí a nasbírají alespoň 1 novou turistickou známku.
 
 ---
 
 ## Jak To Funguje
 
 ```
-Hráč získá zna mku → StreakManager.recordActivity(player)
+Hráč získá známku → StreakManager.recordActivity(player)
          │
          ├── Byl aktivní VČERA?
          │    └── ANO  → streak += 1, odměna dle streak_rewards
@@ -77,10 +77,10 @@ streak_broken: "&c⚡ Tvůj streak &e{streak} &cdní byl přerušen! Začínáš
 | **7 dní** | Střední odměna (diamanty, prefix) |
 | **14 dní** | Velká odměna (netherite, crate klíč) |
 | **30 dní** | Epická odměna (rank, velké peníze, broadcast) |
-| **100 dní** | Legendární odměna (vlastní titul, speciální zna mka) |
+| **100 dní** | Legendární odměna (vlastní titul, speciální známka) |
 
 > [!TIP]
-> Streak systém je nejúčinnější, když jsou zna mky rozmístěny tak, že hráč **musí každý den někam jít** – ne jen jednou vychytat všechny.
+> Streak systém je nejúčinnější, když jsou známky rozmístěny tak, že hráč **musí každý den někam jít** – ne jen jednou vychytat všechny.
 
 ---
 

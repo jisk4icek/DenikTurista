@@ -1,4 +1,4 @@
-# 📖 BasicLand Turistika – Domovská strana Wiki
+﻿# 📖 BasicLand Turistika – Domovská strana Wiki
 
 Vítej v kompletní dokumentaci pluginu **BasicLand Turistika**!
 
@@ -12,7 +12,7 @@ Vítej v kompletní dokumentaci pluginu **BasicLand Turistika**!
 | [⚙️ Jak to Funguje](Jak-to-Funguje) | Kompletní přehled logiky – flow diagramy všech systémů |
 | [⚡ Instalace](Instalace) | Jak plugin nainstalovat a spustit |
 | [⚙️ Konfigurace](Konfigurace) | Podrobný průvodce soubory `config.yml` a `messages.yml` |
-| [📍 Lokace Zna mek](Lokace-Znamek) | Nastavení fyzických míst ve světě kde hráč získá zna mku |
+| [📍 Lokace známek](Lokace-Znamek) | Nastavení fyzických míst ve světě kde hráč získá známku |
 | [📋 Příkazy & Oprávnění](Prikazy-a-Opravneni) | Přehled všech příkazů a permission nodů |
 | [🪂 Systém Airdropů](System-Airdropu) | Konfigurace limitovaných edicí a airdropů |
 | [🏆 Milníky & Odměny](Milniky-a-Odmeny) | Nastavení milníků a server-first odměn |

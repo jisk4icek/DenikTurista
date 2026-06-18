@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="https://img.shields.io/badge/PaperMC-1.20%2B-blue?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/Java-17%2B-orange?style=for-the-badge&logo=openjdk"/>
@@ -10,7 +10,7 @@
 # 🗺️ BasicLand Turistika
 
 **Prémiový PaperMC plugin pro letní turistický event.**  
-Hráči sbírají skryté turistické zna mky, závodí o žebříček, loví limitované airdropy a budují denní streak!
+Hráči sbírají skryté turistické známky, závodí o žebříček, loví limitované airdropy a budují denní streak!
 
 [📖 Wiki](../../wiki) · [🐛 Issues](../../issues) · [📦 Releases](../../releases)
 
@@ -22,13 +22,13 @@ Hráči sbírají skryté turistické zna mky, závodí o žebříček, loví li
 
 | Kategorie | Funkce |
 |---|---|
-| 🎒 **Deník** | GUI inventář se stránkováním (45 zna mek/strana), vizuální rozlišení stavů |
-| 📍 **Fyzické Lokace** | Hráč přijde na místo a zna mku dostane automaticky (proximity, 2s check) |
-| ⏰ **Časové Zámky** | `unlock_date` – zna mky dostupné až od nastaveného data/času |
-| 🏆 **Milníky** | Automatické odměny za N zna mek (items, peníze, ranky, title, broadcast) |
+| 🎒 **Deník** | GUI inventář se stránkováním (45 známek/strana), vizuální rozlišení stavů |
+| 📍 **Fyzické Lokace** | Hráč přijde na místo a známku dostane automaticky (proximity, 2s check) |
+| ⏰ **Časové Zámky** | `unlock_date` – známky dostupné až od nastaveného data/času |
+| 🏆 **Milníky** | Automatické odměny za N známek (items, peníze, ranky, title, broadcast) |
 | 🔥 **Streak Systém** | Odměny za po sobě jdoucí dny aktivity (3, 7, 14, 30 dní...) |
 | 🥇 **Server-First** | Dramatické odměny pro 1./2./3. hráče kteří dokončí celý deník |
-| 📡 **Broadcast Objeření** | Každá první nalezená zna mka = celoserverové oznámení |
+| 📡 **Broadcast Objeření** | Každá první nalezená známka = celoserverové oznámení |
 | 🪂 **Airdropy** | Fyzický item s particles padá v definovaný čas, chráněn PDC před ClearLagem |
 | 🪧 **Hologramy** | TextDisplay entity zobrazující živý TOP žebříček, persistence přes SQLite |
 | 📋 **Admin Příkazy** | give, info, list, top, setlocation, locations, hologram, reload – vše s tab-doplňováním |
@@ -59,12 +59,12 @@ Hráči sbírají skryté turistické zna mky, závodí o žebříček, loví li
 
 | Příkaz | Popis |
 |---|---|
-| `/turista give <hráč> <id>` | Udělí hráči turistickou zna mku |
-| `/turista setlocation <id> [r]` | Nastav lokaci zna mky na své pozici (r = radius v metrech) |
-| `/turista removelocation <id>` | Odstraní lokaci zna mky |
+| `/turista give <hráč> <id>` | Udělí hráči turistickou známku |
+| `/turista setlocation <id> [r]` | Nastav lokaci známky na své pozici (r = radius v metrech) |
+| `/turista removelocation <id>` | Odstraní lokaci známky |
 | `/turista locations` | Vypíše všechny lokace se souřadnicemi |
 | `/turista top` | TOP 10 hráčů v chatu |
-| `/turista list` | Výpis zna mek + indikátor lokace `[LOC]` / `[---]` |
+| `/turista list` | Výpis známek + indikátor lokace `[LOC]` / `[---]` |
 | `/turista info <hráč>` | Progres hráče s vizuálním progress barem |
 | `/turista hologram spawn` | Spawnuje TextDisplay leaderboard hologram |
 | `/turista hologram remove` | Odstraní hologram |
@@ -74,7 +74,7 @@ Hráči sbírají skryté turistické zna mky, závodí o žebříček, loví li
 
 ## ⚙️ Konfigurace – Rychlý Přehled
 
-### Přidání zna mky + fyzická lokace
+### Přidání známky + fyzická lokace
 
 ```yaml
 # config.yml
@@ -104,8 +104,8 @@ milestones:
       - "eco give %player% 2000"               # Peníze (EssentialsX)
       - "lp user %player% parent add vip"      # LuckPerms rank
       - "lp user %player% meta setprefix 100 [&6Turista&r]"  # Prefix
-      - "title %player% &6Zlatý milník!|&710 zna mek!"       # Title
-      - "broadcast &e%player% &7má 10 zna mek!" # Chat broadcast
+      - "title %player% &6Zlatý milník!|&710 známek!"       # Title
+      - "broadcast &e%player% &7má 10 známek!" # Chat broadcast
       - "crates key give %player% touristicky 1" # Crate klíč
 
 streak_rewards:
