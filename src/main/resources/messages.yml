@@ -1,7 +1,7 @@
 prefix: "&8[&b✦ Turistika&8]&7 "
 no_permission: "&cNemáš oprávnění k tomuto příkazu!"
 player_only: "&cTento příkaz může použít pouze hráč."
-stamp_received: "&aGratulujeme! Získal jsi turistickou zna mku: &e{stamp_name}&a!"
+stamp_received: "&aGratulujeme! Získal/a jsi turistickou zna mku: &e{stamp_name}&a!"
 stamp_already_owned: "&cTuto turistickou zna mku již vlastníš."
 stamp_given: "&aZna mka &e{stamp_id} &abyla udělena hráči &e{player}&a."
 stamp_not_found: "&cZna mka s ID &e{stamp_id} &cneexistuje v config.yml."
@@ -13,3 +13,7 @@ airdrop_picked_up: "&b✦ &aSebrals limitovaný airdrop: &e{stamp_name}&a! Gratu
 airdrop_already_owned: "&cTuto limitovanou edici již vlastníš."
 streak_update: "&b⚡ &7Turistický streak: &e{streak} &7dní v řadě! Tak dál!"
 streak_broken: "&c⚡ Tvůj streak &e{streak} &cdní byl přerušen! Začínáš od 1."
+# NPC zprávy
+npc_stamp_locked: "&cTato zna mka ještě není dostupná. Odemkne se: &e{unlock_date}"
+npc_stamp_expired: "&cTato zna mka již není dostupná. Platnost vypršela."
+npc_stamp_out_of_window: "&cTato zna mka je dostupná jen v čas: &e{window}&c. Přijď tehdy!"

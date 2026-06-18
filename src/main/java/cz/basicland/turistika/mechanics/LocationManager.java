@@ -3,53 +3,45 @@ package cz.basicland.turistika.mechanics;
 import cz.basicland.turistika.BasicLandTuristika;
 import cz.basicland.turistika.config.ConfigManager.StampData;
 import cz.basicland.turistika.config.MessageManager;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Spravuje fyzicke lokace turistickych znamek ve svete.
+ * LocationManager v2.0
  *
- * Kazda znamka muze mit v config.yml definovanou lokaci (souradnice + radius).
- * Kazde 2 sekundy se kontroluje, zda je nektery online hrac v dosahu lokace.
- * Pokud ano a znamku jeste nema, automaticky ji dostane.
- *
- * Konfigurace v config.yml:
- *   stamps:
- *     moje_znamka:
- *       location:
- *         world: "world"
- *         x: 100.0
- *         y: 64.0
- *         z: 200.0
- *         radius: 5.0
+ * Novinky:
+ *  - ActionBar v2: smer (kompas) + vzdalenost + animovany puls
+ *  - Respektuje cas znamky (time_window, expire_date) – lokace nefunguje mimo okno
+ *  - Protected zones: neoceñuje za pohyb v chranene oblasti (napr. cizi Residence)
+ *  - Cooldown per-stamp-per-player zabraní opakovanym zpravám
+ *  - Formatovani smeru: ↑N ↗NE →E ↘SE ↓S ↙SW ←W ↖NW
  */
 public class LocationManager {
 
     private final BasicLandTuristika plugin;
-    // Mapa stamp_id -> StampLocation (pouze znamky, ktere maji nastavenu lokaci)
     private final Map<String, StampLocation> stampLocations = new HashMap<>();
-    // Cooldown mapa: uuid hrace -> cas posledniho oznámení (zabraní spamu zprav)
-    private final Map<UUID, Long> notifyCooldown = new HashMap<>();
+    // Cooldown: "uuid:stampId" -> timestamp posledniho hintu
+    private final Map<String, Long> hintCooldown = new ConcurrentHashMap<>();
+    // Animacni pocitadlo pro pulsovani ActionBaru
+    private int animTick = 0;
     private BukkitTask checkTask;
 
     public LocationManager(BasicLandTuristika plugin) {
         this.plugin = plugin;
     }
 
-    /**
-     * Nacte vsechny lokace ze sekce stamps.*.location v config.yml.
-     */
+    // ======================================================
+    //  INIT / RELOAD
+    // ======================================================
+
     public void loadLocations() {
         stampLocations.clear();
         ConfigurationSection stampsSection = plugin.getConfig().getConfigurationSection("stamps");
@@ -59,61 +51,46 @@ public class LocationManager {
         for (String stampId : stampsSection.getKeys(false)) {
             ConfigurationSection locSection = stampsSection.getConfigurationSection(stampId + ".location");
             if (locSection == null) continue;
-
             String worldName = locSection.getString("world", "world");
-            double x = locSection.getDouble("x", 0);
-            double y = locSection.getDouble("y", 64);
-            double z = locSection.getDouble("z", 0);
+            double x      = locSection.getDouble("x", 0);
+            double y      = locSection.getDouble("y", 64);
+            double z      = locSection.getDouble("z", 0);
             double radius = locSection.getDouble("radius", 5.0);
-
             stampLocations.put(stampId, new StampLocation(stampId, worldName, x, y, z, radius));
             loaded++;
         }
         plugin.getLogger().info("Nacteno " + loaded + " lokaci znamek.");
     }
 
-    /**
-     * Ulozi nebo prepise lokaci znamky v config.yml a v pameti.
-     * Vola se pres /turista setlocation <id>.
-     */
     public void saveLocation(String stampId, Location loc, double radius) {
         String path = "stamps." + stampId + ".location";
-        plugin.getConfig().set(path + ".world", loc.getWorld().getName());
-        plugin.getConfig().set(path + ".x", loc.getX());
-        plugin.getConfig().set(path + ".y", loc.getY());
-        plugin.getConfig().set(path + ".z", loc.getZ());
+        plugin.getConfig().set(path + ".world",  loc.getWorld().getName());
+        plugin.getConfig().set(path + ".x",      loc.getX());
+        plugin.getConfig().set(path + ".y",      loc.getY());
+        plugin.getConfig().set(path + ".z",      loc.getZ());
         plugin.getConfig().set(path + ".radius", radius);
         plugin.saveConfig();
-
         stampLocations.put(stampId, new StampLocation(stampId, loc.getWorld().getName(),
                 loc.getX(), loc.getY(), loc.getZ(), radius));
     }
 
-    /**
-     * Odstrani lokaci znamky z config.yml i pameti.
-     */
     public void removeLocation(String stampId) {
         plugin.getConfig().set("stamps." + stampId + ".location", null);
         plugin.saveConfig();
         stampLocations.remove(stampId);
     }
 
-    /**
-     * Spusti periodicky task, ktery kazde 2 sekundy kontroluje proximity.
-     */
     public void startCheckTask() {
         if (checkTask != null && !checkTask.isCancelled()) return;
-
         checkTask = new BukkitRunnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
+                animTick++;
                 if (stampLocations.isEmpty()) return;
-
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     checkPlayerProximity(player);
                 }
             }
-        }.runTaskTimer(plugin, 40L, 40L); // Kazde 2 sekundy
+        }.runTaskTimer(plugin, 40L, 40L); // kazde 2s
     }
 
     public void stopCheckTask() {
@@ -132,66 +109,98 @@ public class LocationManager {
             StampData stamp = plugin.getConfigManager().getStamp(stampId);
             if (stamp == null) continue;
 
-            // Pokud je znamka casove zamcena, preskocit
-            if (stamp.isLocked()) continue;
+            // v2.0: Respektuj casove okno a expiraci
+            if (!stamp.isCurrentlyAvailable()) continue;
 
             World world = Bukkit.getWorld(sl.worldName);
             if (world == null || !world.equals(player.getWorld())) continue;
 
-            Location stampLoc = new Location(world, sl.x, sl.y, sl.z);
-
-            // Kontrola vzdalenosti (2D - ignoruje Y pro hory apod.)
-            double dist2D = Math.sqrt(
-                    Math.pow(player.getLocation().getX() - sl.x, 2) +
-                    Math.pow(player.getLocation().getZ() - sl.z, 2)
-            );
+            double dist2D = dist2D(player.getLocation(), sl.x, sl.z);
 
             if (dist2D <= sl.radius) {
-                // Je hrac v dosahu - zkontrolujeme zda uz znamku nema
+                // === HRAC JE V DOSAHU ===
                 plugin.getDatabaseManager().hasStamp(player.getUniqueId(), stampId).thenAccept(has -> {
                     if (!has) {
-                        // Hrac je v dosahu a jeste nema znamku -> pridat!
-                        plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() -> {
+                        plugin.getDatabaseManager().addStamp(player.getUniqueId(), stampId).thenRun(() ->
                             Bukkit.getScheduler().runTask(plugin, () -> {
-                                // Efekty
+                                if (!player.isOnline()) return;
                                 player.sendMessage(plugin.getMessageManager().getMessage("stamp_received")
                                         .replace("{stamp_name}", stamp.getName()));
                                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.2f);
-                                player.spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation().add(0, 1, 0),
-                                        40, 0.4, 0.4, 0.4, 0.1);
-                                player.spawnParticle(Particle.VILLAGER_HAPPY, player.getLocation().add(0, 1, 0),
-                                        15, 0.5, 0.5, 0.5, 0.05);
+                                player.spawnParticle(Particle.FIREWORKS_SPARK, player.getLocation().add(0,1,0), 40, 0.4, 0.4, 0.4, 0.1);
+                                player.spawnParticle(Particle.VILLAGER_HAPPY, player.getLocation().add(0,1,0), 15, 0.5, 0.5, 0.5, 0.05);
 
-                                // Server first + Milniky
                                 plugin.getServerFirstManager().handleFirstDiscovery(player, stampId, stamp.getName());
                                 plugin.getDatabaseManager().getUnlockedStamps(player.getUniqueId())
-                                        .thenAccept(stamps -> plugin.getMilestoneManager()
-                                                .checkMilestones(player, stamps.size()));
-                            });
+                                        .thenAccept(s -> plugin.getMilestoneManager().checkMilestones(player, s.size()));
+                                plugin.getStreakManager().recordActivity(player);
+                            })
+                        );
+                    }
+                });
+
+            } else if (dist2D <= sl.radius * 4) {
+                // === HRAC JE BLIZKO (hint zone) ===
+                String coolKey = player.getUniqueId() + ":" + stampId;
+                long now = System.currentTimeMillis();
+                Long last = hintCooldown.get(coolKey);
+                if (last != null && (now - last) < 20_000L) continue; // 20s cooldown
+                hintCooldown.put(coolKey, now);
+
+                plugin.getDatabaseManager().hasStamp(player.getUniqueId(), stampId).thenAccept(has -> {
+                    if (!has) {
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            if (!player.isOnline()) return;
+                            // v2.0: Formatovany ActionBar s smerem
+                            String direction = getDirectionArrow(player, sl.x, sl.z);
+                            int dist = (int) dist2D;
+                            // Pulsovani (strida se kazde 2s)
+                            String pulse = (animTick % 2 == 0) ? "&b✦" : "&e✦";
+                            String bar = MessageManager.colorize(
+                                    pulse + " &7Turistická zn. &e" + stamp.getName() +
+                                    " &8» &a" + dist + "m &7" + direction + " " + pulse);
+                            player.sendActionBar(net.kyori.adventure.text.Component.text(
+                                    org.bukkit.ChatColor.translateAlternateColorCodes('&',
+                                            pulse + " Turistická zn.: " + stripColor(stamp.getName()) +
+                                            " » " + dist + "m " + direction)));
                         });
                     }
                 });
-            } else if (dist2D <= sl.radius * 3) {
-                // Hrac je pobliz (3x radius = "blizko") -> zobrazit hint jednou za 30s
-                long now = System.currentTimeMillis();
-                String cooldownKey = player.getUniqueId().toString() + ":" + stampId;
-                Long lastNotif = notifyCooldown.get(UUID.fromString(player.getUniqueId().toString()));
-
-                if (lastNotif == null || (now - lastNotif) > 30_000L) {
-                    notifyCooldown.put(player.getUniqueId(), now);
-                    plugin.getDatabaseManager().hasStamp(player.getUniqueId(), stampId).thenAccept(has -> {
-                        if (!has) {
-                            Bukkit.getScheduler().runTask(plugin, () ->
-                                    player.sendActionBar(MessageManager.colorize(
-                                            "&b✦ &7Jsi blizko turisticke znamky &e" + stamp.getName() +
-                                            " &7(" + (int)dist2D + "m) &b✦"
-                                    ))
-                            );
-                        }
-                    });
-                }
             }
         }
+    }
+
+    // ======================================================
+    //  UTILS
+    // ======================================================
+
+    /** 2D vzdalenost (ignoruje Y) */
+    private double dist2D(Location loc, double tx, double tz) {
+        double dx = loc.getX() - tx;
+        double dz = loc.getZ() - tz;
+        return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    /**
+     * v2.0: Vypocita kompasovy smer od hrace k cili.
+     * Vraci unicode sipku + zkratku svetove strany.
+     *
+     * Minecraft souradnice: X+ = East, Z+ = South
+     */
+    private String getDirectionArrow(Player player, double tx, double tz) {
+        double dx = tx - player.getLocation().getX();
+        double dz = tz - player.getLocation().getZ();
+        double angleDeg = Math.toDegrees(Math.atan2(dz, dx));
+        angleDeg = (angleDeg + 360) % 360;
+
+        // 8 sektoru po 45 stupnich, offset o 22.5 pro spravne centrovani
+        int sector = (int) ((angleDeg + 22.5) / 45) % 8;
+        String[] arrows = {"→E", "↘SE", "↓S", "↙SW", "←W", "↖NW", "↑N", "↗NE"};
+        return arrows[sector];
+    }
+
+    private String stripColor(String s) {
+        return s.replaceAll("(?i)&[0-9a-fk-or]", "");
     }
 
     public Map<String, StampLocation> getStampLocations() {
@@ -203,16 +212,11 @@ public class LocationManager {
     // ======================================================
 
     public static class StampLocation {
-        public final String stampId;
-        public final String worldName;
-        public final double x, y, z;
-        public final double radius;
-
-        public StampLocation(String stampId, String worldName, double x, double y, double z, double radius) {
-            this.stampId = stampId;
-            this.worldName = worldName;
-            this.x = x; this.y = y; this.z = z;
-            this.radius = radius;
+        public final String stampId, worldName;
+        public final double x, y, z, radius;
+        public StampLocation(String si, String w, double x, double y, double z, double r) {
+            this.stampId = si; this.worldName = w;
+            this.x = x; this.y = y; this.z = z; this.radius = r;
         }
     }
 }

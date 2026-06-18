@@ -58,6 +58,15 @@ public class ItemBuilder {
         return this;
     }
 
+    /** Prida enchant glint efekt (vizualni zarive na nalezenych znamkach) */
+    public ItemBuilder setGlint(boolean glint) {
+        if (meta != null && glint) {
+            meta.addEnchant(org.bukkit.enchantments.Enchantment.DURABILITY, 1, true);
+            meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
+        }
+        return this;
+    }
+
     public ItemStack build() {
         if (meta != null) {
             item.setItemMeta(meta);

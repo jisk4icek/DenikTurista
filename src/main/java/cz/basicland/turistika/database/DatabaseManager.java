@@ -358,19 +358,221 @@ public class DatabaseManager {
     }
 
     // ======================================================
+    //  NPC SYSTÉM (v2.0)
+    // ======================================================
+
+    public void createNpcTable() {
+        dbExecutor.submit(() -> {
+            try (Statement st = connection.createStatement()) {
+                st.execute("CREATE TABLE IF NOT EXISTS npc_locations (" +
+                        "stamp_id VARCHAR(64) NOT NULL PRIMARY KEY, " +
+                        "world VARCHAR(64) NOT NULL, " +
+                        "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "entity_uuid VARCHAR(36)" +
+                        ");");
+            } catch (SQLException e) { e.printStackTrace(); }
+        });
+    }
+
+    public void saveNpc(String stampId, org.bukkit.Location loc, UUID entityUUID) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO npc_locations (stamp_id,world,x,y,z,entity_uuid) VALUES(?,?,?,?,?,?)")) {
+                ps.setString(1, stampId);
+                ps.setString(2, loc.getWorld().getName());
+                ps.setDouble(3, loc.getX()); ps.setDouble(4, loc.getY()); ps.setDouble(5, loc.getZ());
+                ps.setString(6, entityUUID != null ? entityUUID.toString() : null);
+                ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    public CompletableFuture<List<NpcData>> loadNpcs() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<NpcData> list = new ArrayList<>();
+            try (Statement st = connection.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT * FROM npc_locations")) {
+                while (rs.next()) {
+                    String euuid = rs.getString("entity_uuid");
+                    list.add(new NpcData(
+                            rs.getString("stamp_id"), rs.getString("world"),
+                            rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"),
+                            euuid != null ? UUID.fromString(euuid) : null));
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+            return list;
+        }, dbExecutor);
+    }
+
+    public void deleteNpc(String stampId) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM npc_locations WHERE stamp_id = ?")) {
+                ps.setString(1, stampId); ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    // ======================================================
+    //  ARMORSTAND MARKERY (v2.1)
+    // ======================================================
+
+    public void createMarkerTable() {
+        dbExecutor.submit(() -> {
+            try (Statement st = connection.createStatement()) {
+                st.execute("CREATE TABLE IF NOT EXISTS marker_locations (" +
+                        "stamp_id VARCHAR(64) NOT NULL PRIMARY KEY, " +
+                        "world VARCHAR(64) NOT NULL, " +
+                        "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "entity_uuid VARCHAR(36)" +
+                        ");");
+            } catch (SQLException e) { e.printStackTrace(); }
+        });
+    }
+
+    public void saveMarker(String stampId, org.bukkit.Location loc, UUID entityUUID) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO marker_locations (stamp_id,world,x,y,z,entity_uuid) VALUES(?,?,?,?,?,?)")) {
+                ps.setString(1, stampId);
+                ps.setString(2, loc.getWorld().getName());
+                ps.setDouble(3, loc.getX()); ps.setDouble(4, loc.getY()); ps.setDouble(5, loc.getZ());
+                ps.setString(6, entityUUID != null ? entityUUID.toString() : null);
+                ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    public CompletableFuture<List<MarkerData>> loadMarkers() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<MarkerData> list = new ArrayList<>();
+            try (Statement st = connection.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT * FROM marker_locations")) {
+                while (rs.next()) {
+                    String euuid = rs.getString("entity_uuid");
+                    list.add(new MarkerData(
+                            rs.getString("stamp_id"), rs.getString("world"),
+                            rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"),
+                            euuid != null ? UUID.fromString(euuid) : null));
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+            return list;
+        }, dbExecutor);
+    }
+
+    public void deleteMarker(String stampId) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "DELETE FROM marker_locations WHERE stamp_id = ?")) {
+                ps.setString(1, stampId); ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    // ======================================================
     //  DATA CLASSES
     // ======================================================
 
     public static class HologramData {
-        public final String id;
-        public final String world;
+        public final String id, world;
         public final double x, y, z;
         public final UUID entityUUID;
-
         public HologramData(String id, String world, double x, double y, double z, UUID entityUUID) {
             this.id = id; this.world = world;
-            this.x = x; this.y = y; this.z = z;
-            this.entityUUID = entityUUID;
+            this.x = x; this.y = y; this.z = z; this.entityUUID = entityUUID;
+        }
+    }
+
+    public static class NpcData {
+        public final String stampId, world;
+        public final double x, y, z;
+        public final UUID entityUUID;
+        public NpcData(String stampId, String world, double x, double y, double z, UUID entityUUID) {
+            this.stampId = stampId; this.world = world;
+            this.x = x; this.y = y; this.z = z; this.entityUUID = entityUUID;
+        }
+    }
+
+    public static class MarkerData {
+        public final String stampId, world;
+        public final double x, y, z;
+        public final UUID entityUUID;
+        public MarkerData(String stampId, String world, double x, double y, double z, UUID entityUUID) {
+            this.stampId = stampId; this.world = world;
+            this.x = x; this.y = y; this.z = z; this.entityUUID = entityUUID;
+        }
+    }
+
+    // ======================================================
+    //  TURISTICKÉ NÁSTĚNKY – BoardManager (v1.0)
+    // ======================================================
+
+    public void createBoardTable() {
+        dbExecutor.submit(() -> {
+            try (Statement st = connection.createStatement()) {
+                st.execute("CREATE TABLE IF NOT EXISTS board_locations (" +
+                        "board_id VARCHAR(64) NOT NULL PRIMARY KEY, " +
+                        "world VARCHAR(64) NOT NULL, " +
+                        "x DOUBLE NOT NULL, y DOUBLE NOT NULL, z DOUBLE NOT NULL, " +
+                        "yaw FLOAT NOT NULL DEFAULT 0, " +
+                        "entity_uuid VARCHAR(36)" +
+                        ");");
+            } catch (SQLException e) { e.printStackTrace(); }
+        });
+    }
+
+    public void saveBoard(String boardId, org.bukkit.Location loc, UUID entityUUID) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO board_locations (board_id,world,x,y,z,yaw,entity_uuid) VALUES(?,?,?,?,?,?,?)")) {
+                ps.setString(1, boardId);
+                ps.setString(2, loc.getWorld().getName());
+                ps.setDouble(3, loc.getX()); ps.setDouble(4, loc.getY()); ps.setDouble(5, loc.getZ());
+                ps.setFloat(6,  loc.getYaw());
+                ps.setString(7, entityUUID != null ? entityUUID.toString() : null);
+                ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    public CompletableFuture<List<BoardData>> loadBoards() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<BoardData> list = new ArrayList<>();
+            try (Statement st = connection.createStatement();
+                 ResultSet rs = st.executeQuery("SELECT * FROM board_locations")) {
+                while (rs.next()) {
+                    String euuid = rs.getString("entity_uuid");
+                    list.add(new BoardData(
+                            rs.getString("board_id"), rs.getString("world"),
+                            rs.getDouble("x"), rs.getDouble("y"), rs.getDouble("z"),
+                            rs.getFloat("yaw"),
+                            euuid != null ? UUID.fromString(euuid) : null));
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+            return list;
+        }, dbExecutor);
+    }
+
+    public void deleteBoard(String boardId) {
+        CompletableFuture.runAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "DELETE FROM board_locations WHERE board_id = ?")) {
+                ps.setString(1, boardId); ps.executeUpdate();
+            } catch (SQLException e) { e.printStackTrace(); }
+        }, dbExecutor);
+    }
+
+    // ======================================================
+    //  DATA CLASSES – BOARD
+    // ======================================================
+
+    public static class BoardData {
+        public final String id, world;
+        public final double x, y, z;
+        public final float yaw;
+        public final UUID entityUUID;
+        public BoardData(String id, String world, double x, double y, double z, float yaw, UUID entityUUID) {
+            this.id = id; this.world = world;
+            this.x = x; this.y = y; this.z = z; this.yaw = yaw; this.entityUUID = entityUUID;
         }
     }
 }

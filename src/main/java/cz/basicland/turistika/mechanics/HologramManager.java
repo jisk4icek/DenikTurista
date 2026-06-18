@@ -149,31 +149,40 @@ public class HologramManager {
      * Nacte aktualni TOP 10 hracu z DB a aktualizuje text TextDisplay entity.
      */
     private void updateHologramContent(String hologramId, UUID entityUUID) {
-        plugin.getDatabaseManager().getTopPlayers(10).thenAccept(top -> {
+        int totalStamps = plugin.getConfigManager().getStamps().size();
+        plugin.getDatabaseManager().getTopPlayers(10).thenAccept(top ->
             Bukkit.getScheduler().runTask(plugin, () -> {
                 Entity entity = Bukkit.getEntity(entityUUID);
                 if (!(entity instanceof TextDisplay)) return;
                 TextDisplay td = (TextDisplay) entity;
 
                 StringBuilder sb = new StringBuilder();
-                sb.append(MessageManager.colorize("&b&l🏆 TURISTICKÝ ŽEBŘÍČEK 🏆\n"));
-                sb.append(MessageManager.colorize("&8&m                    \n"));
+                // Animovany header (strida 2 barvy dle system casu)
+                boolean pulse = (System.currentTimeMillis() / 2000) % 2 == 0;
+                String hdr = pulse ? "&b&l" : "&e&l";
+                sb.append(MessageManager.colorize(hdr + "★ TURISTICKÝ ŽEBŘÍČEK ★\n"));
+                sb.append(MessageManager.colorize("&8━━━━━━━━━━━━━━━━━━━━\n"));
 
                 if (top.isEmpty()) {
-                    sb.append(MessageManager.colorize("&7Zatím žádní hráči.\n"));
+                    sb.append(MessageManager.colorize("&7Zatím žádní turisté.\n"));
                 } else {
-                    String[] medals = {"&e⬛", "&f⬛", "&6⬛"};
+                    String[] medals = {"&6✦", "&f✦", "&c✦"};
+                    String[] rankNames = {"&6#1", "&f#2", "&c#3"};
                     for (int i = 0; i < top.size(); i++) {
-                        String rankIcon = i < 3 ? MessageManager.colorize(medals[i]) : "&7" + (i + 1) + ".";
-                        sb.append(MessageManager.colorize(rankIcon + " &a" + top.get(i).getKey() +
-                                " &7- &e" + top.get(i).getValue() + " &7zn.\n"));
+                        String rankIcon  = i < 3 ? MessageManager.colorize(medals[i]) : MessageManager.colorize("&7#" + (i+1));
+                        String rankLabel = i < 3 ? MessageManager.colorize(rankNames[i]) : "&7";
+                        int pct = totalStamps > 0 ? (top.get(i).getValue() * 100) / totalStamps : 0;
+                        sb.append(rankIcon).append(" &e").append(top.get(i).getKey())
+                          .append(" &8» &a").append(top.get(i).getValue())
+                          .append(" &8(&e").append(pct).append("%&8)\n");
                     }
                 }
 
-                sb.append(MessageManager.colorize("\n&8Aktualizováno: &7nyní"));
-                td.setText(sb.toString());
-            });
-        });
+                sb.append(MessageManager.colorize("&8━━━━━━━━━━━━━━━━━━━━\n"));
+                sb.append(MessageManager.colorize("&7Celkem: &e" + totalStamps + " &7znamek v eventu"));
+                td.setText(MessageManager.colorize(sb.toString()));
+            })
+        );
     }
 
     // ======================================================
